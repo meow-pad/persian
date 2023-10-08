@@ -71,7 +71,7 @@ func (mgr *lifeCycleManager) OnAppStop(ctx context.Context) {
 		if lc != nil {
 			err := coding.SafeRunWithContext(lc.Stop, ctx)
 			if err != nil {
-				plog.Panic("stopping error:", cfield.String("module", lc.CName()), zap.Error(err))
+				plog.Error("stopping error:", cfield.String("module", lc.CName()), zap.Error(err))
 			} else {
 				plog.Info("stopping success:", cfield.String("module", lc.CName()))
 			}

@@ -28,6 +28,7 @@ require (
 	github.com/jonboulle/clockwork v0.4.0 // indirect
 	github.com/lestrrat-go/strftime v1.0.6 // indirect
 	github.com/magiconair/properties v1.8.5 // indirect
+	github.com/nacos-group/nacos-sdk-go/v2 v2.1.1 // indirect
 	github.com/pelletier/go-toml v1.9.4 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
