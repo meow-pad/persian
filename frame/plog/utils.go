@@ -2,10 +2,10 @@ package plog
 
 import (
 	"fmt"
+	"github.com/meow-pad/persian/utils/coding"
 	"github.com/pkg/errors"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
-	"persian/utils/coding"
 	"strings"
 	"time"
 )

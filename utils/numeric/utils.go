@@ -1,6 +1,6 @@
 package numeric
 
-import constraints "persian/constrains"
+import constraints "github.com/meow-pad/persian/constrains"
 
 func Min[T constraints.Comparable](value1, value2 T) T {
 	if value1 >= value2 {

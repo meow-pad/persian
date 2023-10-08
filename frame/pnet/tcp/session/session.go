@@ -1,6 +1,6 @@
 package session
 
-import "persian/frame/plog"
+import "github.com/meow-pad/persian/frame/plog"
 
 const (
 	InvalidSessionId = 0

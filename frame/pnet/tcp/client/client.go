@@ -3,15 +3,15 @@ package client
 import (
 	"context"
 	"errors"
+	"github.com/meow-pad/persian/errdef"
+	"github.com/meow-pad/persian/frame/plog"
+	"github.com/meow-pad/persian/frame/plog/cfield"
+	"github.com/meow-pad/persian/frame/pnet"
+	"github.com/meow-pad/persian/frame/pnet/tcp/codec"
+	"github.com/meow-pad/persian/frame/pnet/tcp/session"
+	"github.com/meow-pad/persian/frame/pnet/utils"
+	"github.com/meow-pad/persian/utils/coding"
 	"net"
-	"persian/errdef"
-	"persian/frame/plog"
-	"persian/frame/plog/cfield"
-	"persian/frame/pnet"
-	"persian/frame/pnet/tcp/codec"
-	"persian/frame/pnet/tcp/session"
-	"persian/frame/pnet/utils"
-	"persian/utils/coding"
 	"sync/atomic"
 )
 

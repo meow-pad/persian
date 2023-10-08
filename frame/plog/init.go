@@ -2,9 +2,9 @@ package plog
 
 import (
 	"fmt"
+	"github.com/meow-pad/persian/utils/loggers"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
-	"persian/utils/loggers"
 	"time"
 )
 

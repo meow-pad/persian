@@ -3,7 +3,7 @@ package coding
 import (
 	"context"
 	"fmt"
-	"persian/errdef"
+	"github.com/meow-pad/persian/errdef"
 	"reflect"
 )
 

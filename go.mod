@@ -1,4 +1,4 @@
-module persian
+module github.com/meow-pad/persian
 
 go 1.20
 

@@ -2,12 +2,12 @@ package client
 
 import (
 	"bytes"
+	"github.com/meow-pad/persian/frame/plog"
+	"github.com/meow-pad/persian/frame/pnet"
+	"github.com/meow-pad/persian/frame/pnet/tcp/session"
 	"github.com/panjf2000/gnet/v2/pkg/buffer/elastic"
 	"io"
 	"net"
-	"persian/frame/plog"
-	"persian/frame/pnet"
-	"persian/frame/pnet/tcp/session"
 )
 
 func NewConn(client *Client, pConn *net.TCPConn) (*Conn, error) {

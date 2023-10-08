@@ -1,8 +1,8 @@
 package passert
 
 import (
+	"github.com/meow-pad/persian/frame/plog"
 	"go.uber.org/zap"
-	"persian/frame/plog"
 )
 
 func IsTrue(value bool, msg string, args ...zap.Field) {

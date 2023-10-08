@@ -1,8 +1,8 @@
 package server
 
 import (
+	"github.com/meow-pad/persian/frame/pnet/tcp/session"
 	"github.com/panjf2000/gnet/v2"
-	"persian/frame/pnet/tcp/session"
 )
 
 func newConn(gConn gnet.Conn) (*Conn, error) {

@@ -1,8 +1,8 @@
 package coding
 
 import (
+	"github.com/meow-pad/persian/utils/loggers"
 	"go.uber.org/zap"
-	"persian/utils/loggers"
 )
 
 // CachePanicError

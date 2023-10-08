@@ -1,6 +1,6 @@
 package message
 
-import "persian/errdef"
+import "github.com/meow-pad/persian/errdef"
 
 // Codec
 //

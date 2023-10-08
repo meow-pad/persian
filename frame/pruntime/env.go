@@ -1,9 +1,9 @@
 package pruntime
 
 import (
+	"github.com/meow-pad/persian/frame/plog"
 	"go.uber.org/zap"
 	"os"
-	"persian/frame/plog"
 	"time"
 )
 
@@ -41,7 +41,7 @@ var (
 	hostname      string
 )
 
-func init() {
+func Init() {
 	// 获取环境数据
 	envName := os.Getenv(osEnvNameEnvironment)
 	switch envName {

@@ -5,12 +5,12 @@ import (
 	"errors"
 	"github.com/gobwas/ws"
 	"github.com/gobwas/ws/wsutil"
+	"github.com/meow-pad/persian/errdef"
+	"github.com/meow-pad/persian/frame/plog"
+	"github.com/meow-pad/persian/frame/plog/cfield"
+	"github.com/meow-pad/persian/frame/pnet/message"
 	"github.com/panjf2000/gnet/v2"
 	"io"
-	"persian/errdef"
-	"persian/frame/plog"
-	"persian/frame/plog/cfield"
-	"persian/frame/pnet/message"
 )
 
 type wsReadWrite struct {

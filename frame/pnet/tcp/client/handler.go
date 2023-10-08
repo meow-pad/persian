@@ -1,8 +1,8 @@
 package client
 
 import (
-	"persian/frame/plog"
-	"persian/frame/plog/cfield"
+	"github.com/meow-pad/persian/frame/plog"
+	"github.com/meow-pad/persian/frame/plog/cfield"
 )
 
 type action uint32

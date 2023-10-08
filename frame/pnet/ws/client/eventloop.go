@@ -4,11 +4,11 @@ import (
 	"context"
 	"errors"
 	"github.com/gorilla/websocket"
-	"persian/errdef"
-	"persian/frame/plog"
-	"persian/frame/plog/cfield"
-	"persian/frame/pnet"
-	"persian/utils/coding"
+	"github.com/meow-pad/persian/errdef"
+	"github.com/meow-pad/persian/frame/plog"
+	"github.com/meow-pad/persian/frame/plog/cfield"
+	"github.com/meow-pad/persian/frame/pnet"
+	"github.com/meow-pad/persian/utils/coding"
 )
 
 // 写事件

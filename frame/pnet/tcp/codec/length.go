@@ -4,12 +4,12 @@ import (
 	"bytes"
 	"encoding/binary"
 	"errors"
+	"github.com/meow-pad/persian/frame/plog"
+	"github.com/meow-pad/persian/frame/plog/cfield"
+	"github.com/meow-pad/persian/frame/pnet"
+	"github.com/meow-pad/persian/utils/numeric"
 	"github.com/panjf2000/gnet/v2"
 	"io"
-	"persian/frame/plog"
-	"persian/frame/plog/cfield"
-	"persian/frame/pnet"
-	"persian/utils/numeric"
 )
 
 var (

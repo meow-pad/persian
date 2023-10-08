@@ -1,10 +1,10 @@
 package session
 
 import (
-	"persian/errdef"
-	"persian/frame/plog"
-	"persian/frame/plog/cfield"
-	"persian/frame/pnet"
+	"github.com/meow-pad/persian/errdef"
+	"github.com/meow-pad/persian/frame/plog"
+	"github.com/meow-pad/persian/frame/plog/cfield"
+	"github.com/meow-pad/persian/frame/pnet"
 	"reflect"
 	"sync"
 	"time"

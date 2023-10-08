@@ -3,8 +3,8 @@ package collections
 import (
 	"context"
 	stdErrors "errors"
-	"persian/errdef"
-	"persian/utils/loggers"
+	"github.com/meow-pad/persian/errdef"
+	"github.com/meow-pad/persian/utils/loggers"
 	"sync/atomic"
 )
 

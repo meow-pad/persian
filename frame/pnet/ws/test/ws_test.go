@@ -2,11 +2,11 @@ package test
 
 import (
 	"context"
+	"github.com/meow-pad/persian/frame/pnet/message"
+	"github.com/meow-pad/persian/frame/pnet/tcp/session"
+	"github.com/meow-pad/persian/frame/pnet/ws/client"
+	"github.com/meow-pad/persian/frame/pnet/ws/server"
 	"github.com/stretchr/testify/require"
-	"persian/frame/pnet/message"
-	"persian/frame/pnet/tcp/session"
-	"persian/frame/pnet/ws/client"
-	"persian/frame/pnet/ws/server"
 	"testing"
 	"time"
 )

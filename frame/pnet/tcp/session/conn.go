@@ -1,10 +1,10 @@
 package session
 
 import (
+	"github.com/meow-pad/persian/errdef"
 	"github.com/panjf2000/gnet/v2"
 	"io"
 	"net"
-	"persian/errdef"
 	"sync/atomic"
 )
 

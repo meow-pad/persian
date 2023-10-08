@@ -3,8 +3,8 @@ package server
 import (
 	"bytes"
 	"github.com/gobwas/ws"
+	"github.com/meow-pad/persian/frame/pnet/tcp/session"
 	"github.com/panjf2000/gnet/v2"
-	"persian/frame/pnet/tcp/session"
 )
 
 type wsMessageBuf struct {

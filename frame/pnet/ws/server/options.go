@@ -1,9 +1,9 @@
 package server
 
 import (
+	"github.com/meow-pad/persian/frame/plog"
+	"github.com/meow-pad/persian/frame/pruntime"
 	"github.com/panjf2000/gnet/v2"
-	"persian/frame/plog"
-	"persian/frame/pruntime"
 	"time"
 )
 

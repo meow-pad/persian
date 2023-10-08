@@ -1,9 +1,9 @@
 package codec
 
 import (
+	"github.com/meow-pad/persian/frame/pnet/message"
 	"github.com/panjf2000/gnet/v2"
 	"math"
-	"persian/frame/pnet/message"
 )
 
 const (

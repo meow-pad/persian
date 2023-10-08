@@ -2,8 +2,8 @@ package client
 
 import (
 	"github.com/gorilla/websocket"
+	"github.com/meow-pad/persian/frame/pnet/tcp/session"
 	"io"
-	"persian/frame/pnet/tcp/session"
 	"time"
 )
 
