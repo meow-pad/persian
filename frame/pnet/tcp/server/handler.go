@@ -13,7 +13,7 @@ type eventHandler struct {
 }
 
 func (handler *eventHandler) OnBoot(engine gnet.Engine) (action gnet.Action) {
-	handler.server.engine = engine
+	handler.server.startChan <- engine
 	return
 }
 

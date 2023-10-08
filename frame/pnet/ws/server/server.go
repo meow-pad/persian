@@ -9,7 +9,6 @@ import (
 	"persian/frame/pnet/message"
 	"persian/frame/pnet/tcp/session"
 	"persian/frame/pnet/utils"
-	"sync"
 )
 
 func NewServer(name string, protoAddr string,
@@ -59,12 +58,12 @@ type Server struct {
 	codec *wsCodec
 	// 会话监听器
 	listener session.Listener
-
-	// 未注册会话集合
-	unregisterSessions sync.Map
+	// 启动通知
+	startChan chan gnet.Engine
 }
 
-func (server *Server) Start(_ context.Context) error {
+func (server *Server) Start(ctx context.Context) error {
+	server.startChan = make(chan gnet.Engine)
 	go func() {
 		err := gnet.Run(
 			&eventHandler{server: server},
@@ -74,6 +73,15 @@ func (server *Server) Start(_ context.Context) error {
 			plog.Error("run server error:", cfield.String("server", server.name), cfield.Error(err))
 		}
 	}()
+	select {
+	case eng := <-server.startChan:
+		if err := eng.Validate(); err != nil {
+			return err
+		}
+		server.engine = eng
+	case <-ctx.Done():
+		return errors.New("start server timeout")
+	}
 	return nil
 }
 

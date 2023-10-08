@@ -57,9 +57,12 @@ type Server struct {
 	listener session.Listener
 	// gnet内部engine
 	engine gnet.Engine
+	// 启动通知
+	startChan chan gnet.Engine
 }
 
-func (server *Server) Start(_ context.Context) error {
+func (server *Server) Start(ctx context.Context) error {
+	server.startChan = make(chan gnet.Engine)
 	go func() {
 		err := gnet.Run(
 			&eventHandler{server: server},
@@ -69,6 +72,15 @@ func (server *Server) Start(_ context.Context) error {
 			plog.Error("run server error:", cfield.String("server", server.name), cfield.Error(err))
 		}
 	}()
+	select {
+	case eng := <-server.startChan:
+		if err := eng.Validate(); err != nil {
+			return err
+		}
+		server.engine = eng
+	case <-ctx.Done():
+		return errors.New("start server timeout")
+	}
 	return nil
 }
 
