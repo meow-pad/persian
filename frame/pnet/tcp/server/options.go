@@ -2,7 +2,7 @@ package server
 
 import (
 	"github.com/meow-pad/persian/frame/plog"
-	"github.com/meow-pad/persian/frame/pruntime"
+	"github.com/meow-pad/persian/utils/runtime"
 	"github.com/panjf2000/gnet/v2"
 	"time"
 )
@@ -16,7 +16,7 @@ func NewOptions(opts ...Option) (*Options, error) {
 	options := &Options{
 		GNetOptions: gnet.Options{
 			// NumEventLoop is set up to start the given number of event-loop goroutine.
-			NumEventLoop: pruntime.MaxProcess(),
+			NumEventLoop: runtime.MaxProcess(),
 			// LB represents the load-balancing algorithm used when assigning new connections.
 			LB: gnet.LeastConnections,
 			// ReuseAddr indicates whether to set up the SO_REUSEADDR socket option.

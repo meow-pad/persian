@@ -2,7 +2,7 @@ package server
 
 import (
 	"github.com/meow-pad/persian/frame/plog"
-	"github.com/meow-pad/persian/frame/plog/cfield"
+	"github.com/meow-pad/persian/frame/plog/pfield"
 	"github.com/panjf2000/gnet/v2"
 	"reflect"
 	"time"
@@ -23,21 +23,21 @@ func (handler *eventHandler) OnShutdown(_ gnet.Engine) {
 func (handler *eventHandler) OnOpen(gConn gnet.Conn) (out []byte, action gnet.Action) {
 	conn, err := newConn(gConn)
 	if err != nil {
-		plog.Error("create connection error:", cfield.Error(err))
+		plog.Error("create connection error:", pfield.Error(err))
 		action = gnet.Close
 		return
 	}
 	sess, err := newSession(handler.server, conn)
 	if err != nil {
-		plog.Error("create session error:", cfield.Error(err))
+		plog.Error("create session error:", pfield.Error(err))
 		action = gnet.Close
 		return
 	}
 	plog.Debug("open connecting:",
-		cfield.String("server", handler.server.name),
-		cfield.Uint64("conn", conn.Hash()))
+		pfield.String("server", handler.server.name),
+		pfield.Uint64("conn", conn.Hash()))
 	if err = handler.server.AddSession(sess); err != nil {
-		plog.Error("add session error:", cfield.Error(err))
+		plog.Error("add session error:", pfield.Error(err))
 		action = gnet.Close
 		return
 	}
@@ -48,14 +48,14 @@ func (handler *eventHandler) OnOpen(gConn gnet.Conn) (out []byte, action gnet.Ac
 func (handler *eventHandler) OnClose(conn gnet.Conn, err error) (action gnet.Action) {
 	connCtx := conn.Context()
 	if connCtx == nil {
-		plog.Warn("connection less context", cfield.NamedError("closeReason", err))
+		plog.Warn("connection less context", pfield.NamedError("closeReason", err))
 		return
 	}
 	sess, ok := connCtx.(*svrSession)
 	if !ok {
 		plog.Error("connection context is not session",
-			cfield.String("contextType", reflect.TypeOf(connCtx).String()),
-			cfield.NamedError("closeReason", err))
+			pfield.String("contextType", reflect.TypeOf(connCtx).String()),
+			pfield.NamedError("closeReason", err))
 		return
 	}
 	// 转换到关闭状态
@@ -63,8 +63,8 @@ func (handler *eventHandler) OnClose(conn gnet.Conn, err error) (action gnet.Act
 	// 移除会话
 	handler.server.RemoveSession(sess)
 	plog.Debug("close connecting:",
-		cfield.String("server", handler.server.name),
-		cfield.Uint64("conn", sess.conn.Hash()))
+		pfield.String("server", handler.server.name),
+		pfield.Uint64("conn", sess.conn.Hash()))
 	// 触发关闭监听
 	handler.server.listener.OnClosed(sess)
 	return
@@ -79,13 +79,13 @@ func (handler *eventHandler) OnTraffic(conn gnet.Conn) (action gnet.Action) {
 	sess, ok := connCtx.(*svrSession)
 	if !ok {
 		plog.Error("connection context is not session",
-			cfield.String("contextType", reflect.TypeOf(connCtx).String()))
+			pfield.String("contextType", reflect.TypeOf(connCtx).String()))
 		action = gnet.Close
 		return
 	}
 	msgArr, totalLen, err := handler.server.codec.Decode(conn)
 	if err != nil {
-		plog.Error("decode error", cfield.Error(err))
+		plog.Error("decode error", pfield.Error(err))
 		action = gnet.Close
 		return
 	}

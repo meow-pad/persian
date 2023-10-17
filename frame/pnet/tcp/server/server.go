@@ -4,7 +4,7 @@ import (
 	"context"
 	"errors"
 	"github.com/meow-pad/persian/frame/plog"
-	"github.com/meow-pad/persian/frame/plog/cfield"
+	"github.com/meow-pad/persian/frame/plog/pfield"
 	"github.com/meow-pad/persian/frame/pnet/tcp/codec"
 	"github.com/meow-pad/persian/frame/pnet/tcp/session"
 	"github.com/meow-pad/persian/frame/pnet/utils"
@@ -69,7 +69,7 @@ func (server *Server) Start(ctx context.Context) error {
 			server.protoAddr,
 			gnet.WithOptions(server.options.GNetOptions))
 		if err != nil {
-			plog.Error("run server error:", cfield.String("server", server.name), cfield.Error(err))
+			plog.Error("run server error:", pfield.String("server", server.name), pfield.Error(err))
 		}
 	}()
 	select {

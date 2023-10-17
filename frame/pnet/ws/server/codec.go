@@ -7,7 +7,7 @@ import (
 	"github.com/gobwas/ws/wsutil"
 	"github.com/meow-pad/persian/errdef"
 	"github.com/meow-pad/persian/frame/plog"
-	"github.com/meow-pad/persian/frame/plog/cfield"
+	"github.com/meow-pad/persian/frame/plog/pfield"
 	"github.com/meow-pad/persian/frame/pnet/message"
 	"github.com/panjf2000/gnet/v2"
 	"io"
@@ -59,7 +59,7 @@ func (codec *wsCodec) Decode(conn *Conn) ([]any, int, gnet.Action) {
 	}
 	wsMsgArr, err := codec.readWsMessages(conn)
 	if err != nil {
-		plog.Error("read ws messages error:", cfield.Uint64("conn", conn.Hash()), cfield.Error(err))
+		plog.Error("read ws messages error:", pfield.Uint64("conn", conn.Hash()), pfield.Error(err))
 	}
 	arrLen := len(wsMsgArr)
 	if arrLen <= 0 {
@@ -73,7 +73,7 @@ func (codec *wsCodec) Decode(conn *Conn) ([]any, int, gnet.Action) {
 			totalLen += len(wsMsg.Payload)
 			msg, dErr := codec.msgCodec.Decode(wsMsg.Payload)
 			if dErr != nil {
-				plog.Error("decode message error:", cfield.Uint64("conn", conn.Hash()), cfield.Error(dErr))
+				plog.Error("decode message error:", pfield.Uint64("conn", conn.Hash()), pfield.Error(dErr))
 			} else {
 				msgArr = append(msgArr, msg)
 			}
@@ -89,7 +89,7 @@ func (codec *wsCodec) Decode(conn *Conn) ([]any, int, gnet.Action) {
 			}
 		case ws.OpPong:
 		default:
-			plog.Warn("unknown ws opCode", cfield.Uint8("opCoded", uint8(wsMsg.OpCode)))
+			plog.Warn("unknown ws opCode", pfield.Uint8("opCoded", uint8(wsMsg.OpCode)))
 		}
 	}
 	return msgArr, totalLen, gnet.None
@@ -99,15 +99,15 @@ func (codec *wsCodec) upgrade(conn *Conn) (ok bool, action gnet.Action) {
 	size := conn.InboundBuffered()
 	buf, err := conn.Peek(size)
 	if err != nil {
-		plog.Error("peek bytes error:", cfield.Uint64("conn", conn.Hash()), cfield.Error(err))
+		plog.Error("peek bytes error:", pfield.Uint64("conn", conn.Hash()), pfield.Error(err))
 		action = gnet.Close
 		return
 	}
 	read := len(buf)
 	if read < size {
 		plog.Error("peek bytes len error",
-			cfield.Uint64("conn", conn.Hash()),
-			cfield.Int("need", size), cfield.Int("read", read))
+			pfield.Uint64("conn", conn.Hash()),
+			pfield.Int("need", size), pfield.Int("read", read))
 		action = gnet.Close
 		return
 	}
@@ -120,19 +120,19 @@ func (codec *wsCodec) upgrade(conn *Conn) (ok bool, action gnet.Action) {
 			//数据不完整
 			return
 		}
-		plog.Error("upgraded conn error", cfield.Uint64("conn", conn.Hash()), cfield.Error(err))
+		plog.Error("upgraded conn error", pfield.Uint64("conn", conn.Hash()), pfield.Error(err))
 		action = gnet.Close
 		return
 	}
 	if _, err = conn.Discard(skipN); err != nil {
-		plog.Error("discard bytes error", cfield.Uint64("conn", conn.Hash()), cfield.Error(err))
+		plog.Error("discard bytes error", pfield.Uint64("conn", conn.Hash()), pfield.Error(err))
 		action = gnet.Close
 		return
 	}
 	ok = true
 	conn.upgraded = true
 	plog.Debug("upgraded websocket protocol",
-		cfield.Uint64("conn", conn.Hash()), cfield.Any("handshake", hs))
+		pfield.Uint64("conn", conn.Hash()), pfield.Any("handshake", hs))
 	return
 }
 
@@ -169,7 +169,7 @@ func (codec *wsCodec) readWsMessages(conn *Conn) (messages []wsutil.Message, err
 					}
 					if _, dErr := conn.Discard(skipN); dErr != nil {
 						plog.Error("discard bytes error:",
-							cfield.Uint64("conn", conn.Hash()), cfield.Error(err))
+							pfield.Uint64("conn", conn.Hash()), pfield.Error(err))
 					}
 					return
 				}
@@ -204,7 +204,7 @@ func (codec *wsCodec) readWsMessages(conn *Conn) (messages []wsutil.Message, err
 			}
 			msgBuf.inboundCached.Reset()
 		} else {
-			plog.Debug("data is split into multiple frames", cfield.Uint64("conn", conn.Hash()))
+			plog.Debug("data is split into multiple frames", pfield.Uint64("conn", conn.Hash()))
 		}
 		msgBuf.curHeader = nil
 	}

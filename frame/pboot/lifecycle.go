@@ -3,9 +3,8 @@ package pboot
 import (
 	"context"
 	"github.com/go-spring/spring-core/gs"
-	"github.com/meow-pad/persian/errdef"
 	"github.com/meow-pad/persian/frame/plog"
-	"github.com/meow-pad/persian/frame/plog/cfield"
+	"github.com/meow-pad/persian/frame/plog/pfield"
 	"github.com/meow-pad/persian/utils/coding"
 	"go.uber.org/zap"
 )
@@ -16,27 +15,29 @@ type LifeCycle interface {
 	CName() string
 }
 
-type LifeCycleBase struct {
+// lifeCycleWrapper
+type lifeCycleWrapper struct {
+	lc LifeCycle
 }
 
-func (lf *LifeCycleBase) OnAppStart(_ gs.Context) {
-	// dummy
+func (lf *lifeCycleWrapper) OnAppStart(_ gs.Context) {
+	// nothing
 }
 
-func (lf *LifeCycleBase) OnAppStop(_ context.Context) {
-	// dummy
+func (lf *lifeCycleWrapper) OnAppStop(_ context.Context) {
+	// nothing
 }
 
-func (lf *LifeCycleBase) Start(context.Context) error {
-	return errdef.ErrNotImplemented
+func (lf *lifeCycleWrapper) Start(ctx context.Context) error {
+	return lf.lc.Start(ctx)
 }
 
-func (lf *LifeCycleBase) Stop(context.Context) error {
-	return errdef.ErrNotImplemented
+func (lf *lifeCycleWrapper) Stop(ctx context.Context) error {
+	return lf.lc.Stop(ctx)
 }
 
-func (lf *LifeCycleBase) CName() string {
-	return ""
+func (lf *lifeCycleWrapper) CName() string {
+	return lf.lc.CName()
 }
 
 func initLifeCycleMgr() {
@@ -56,9 +57,9 @@ func (mgr *lifeCycleManager) OnAppStart(gsCtx gs.Context) {
 		if lc != nil {
 			err := coding.SafeRunWithContext(lc.Start, ctx)
 			if err != nil {
-				plog.Panic("starting error:", cfield.String("module", lc.CName()), zap.Error(err))
+				plog.Panic("starting error:", pfield.String("module", lc.CName()), zap.Error(err))
 			} else {
-				plog.Info("starting success:", cfield.String("module", lc.CName()))
+				plog.Info("starting success:", pfield.String("module", lc.CName()))
 			}
 		}
 	} // end of for
@@ -71,9 +72,9 @@ func (mgr *lifeCycleManager) OnAppStop(ctx context.Context) {
 		if lc != nil {
 			err := coding.SafeRunWithContext(lc.Stop, ctx)
 			if err != nil {
-				plog.Error("stopping error:", cfield.String("module", lc.CName()), zap.Error(err))
+				plog.Error("stopping error:", pfield.String("module", lc.CName()), zap.Error(err))
 			} else {
-				plog.Info("stopping success:", cfield.String("module", lc.CName()))
+				plog.Info("stopping success:", pfield.String("module", lc.CName()))
 			}
 		}
 	} // end of for

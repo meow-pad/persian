@@ -6,7 +6,7 @@ import (
 	"errors"
 	"github.com/meow-pad/persian/errdef"
 	"github.com/meow-pad/persian/frame/plog"
-	"github.com/meow-pad/persian/frame/plog/cfield"
+	"github.com/meow-pad/persian/frame/plog/pfield"
 	"github.com/meow-pad/persian/frame/pnet"
 	"github.com/meow-pad/persian/frame/pnet/tcp/session"
 	"github.com/meow-pad/persian/utils/coding"
@@ -99,7 +99,7 @@ func (loop *eventLoop) run(first bool) {
 				_, err := loop.conn.TCPConn.ReadFrom(&loop.conn.outbound)
 				if event.callback != nil {
 					if cErr := event.callback(loop.conn, err); cErr != nil {
-						plog.Error("write callback error:", cfield.Error(cErr))
+						plog.Error("write callback error:", pfield.Error(cErr))
 					}
 				} else if err != nil {
 					loop._stop(err)
@@ -137,7 +137,7 @@ func (loop *eventLoop) readConn() {
 		n, err := loop.conn.TCPConn.Read(loop.buffer)
 		if err != nil {
 			if sErr := loop.stop(context.Background(), err); sErr != nil && !errors.Is(sErr, pnet.ErrClosedClient) {
-				plog.Error("", cfield.Error(sErr))
+				plog.Error("", pfield.Error(sErr))
 			}
 			return
 		}
@@ -244,7 +244,7 @@ func (loop *eventLoop) _stop(reason error) {
 		return
 	}
 	if err := loop.conn.TCPConn.Close(); err != nil {
-		plog.Error("close connection error:", cfield.Error(err))
+		plog.Error("close connection error:", pfield.Error(err))
 	}
 	// 即便连接关闭出错，也继续走关闭逻辑
 	loop.handler.OnClose(loop.conn, reason)

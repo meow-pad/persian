@@ -5,7 +5,7 @@ import (
 	"encoding/binary"
 	"errors"
 	"github.com/meow-pad/persian/frame/plog"
-	"github.com/meow-pad/persian/frame/plog/cfield"
+	"github.com/meow-pad/persian/frame/plog/pfield"
 	"github.com/meow-pad/persian/frame/pnet"
 	"github.com/meow-pad/persian/utils/numeric"
 	"github.com/panjf2000/gnet/v2"
@@ -104,7 +104,7 @@ func (codec *lengthFieldCodec) Encode(msg any) (out []byte, err error) {
 			return
 		}
 		if bodyLen > codec.warningEncodedLength {
-			plog.Warn("encoded message is too long", cfield.Int("bodyLen", bodyLen))
+			plog.Warn("encoded message is too long", pfield.Int("bodyLen", bodyLen))
 		}
 		// 写入魔数、消息长度和消息内容
 		bodyOffset := codec.magicSize + codec.LengthSize

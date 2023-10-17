@@ -3,7 +3,7 @@ package session
 import (
 	"github.com/meow-pad/persian/errdef"
 	"github.com/meow-pad/persian/frame/plog"
-	"github.com/meow-pad/persian/frame/plog/cfield"
+	"github.com/meow-pad/persian/frame/plog/pfield"
 	"github.com/meow-pad/persian/frame/pnet"
 	"reflect"
 	"sync"
@@ -98,11 +98,11 @@ func (manager *Manager) RegisterSession(svrSess Session, context Context) error 
 	if value, _ := manager.registerSessions.Load(sessionId); value != nil {
 		if oldSession, ok := value.(Session); !ok {
 			plog.Error("there is invalid value in registerSessions",
-				cfield.String("valueType", reflect.TypeOf(value).String()))
+				pfield.String("valueType", reflect.TypeOf(value).String()))
 		} else {
 			// 关闭旧会话
 			if err := oldSession.Close(); err != nil {
-				plog.Error("close session error:", cfield.Error(err))
+				plog.Error("close session error:", pfield.Error(err))
 			}
 		} // end of else
 	}
@@ -123,7 +123,7 @@ func (manager *Manager) GetSession(sessionId uint64) Session {
 	}
 	if sess, ok := value.(Session); !ok {
 		manager.registerSessions.Delete(sessionId)
-		plog.Error("invalid session type", cfield.String("type", reflect.TypeOf(value).String()))
+		plog.Error("invalid session type", pfield.String("type", reflect.TypeOf(value).String()))
 		return nil
 	} else {
 		return sess
@@ -160,15 +160,15 @@ func (manager *Manager) checkUnregisteredSessions() {
 			manager.unregisterSessions.Delete(key)
 			if svrSess, ok = key.(Session); ok {
 				plog.Debug("unregistered session has expired:",
-					cfield.String("manager", manager.name),
-					cfield.Uint64("conn", svrSess.Connection().Hash()))
+					pfield.String("manager", manager.name),
+					pfield.Uint64("conn", svrSess.Connection().Hash()))
 				// 过期关闭
 				if err := svrSess.Close(); err != nil {
-					plog.Error("close session error:", cfield.Error(err))
+					plog.Error("close session error:", pfield.Error(err))
 				}
 			} else {
 				plog.Error("there is invalid type key in unregisterSessions",
-					cfield.String("keyType", reflect.TypeOf(key).String()))
+					pfield.String("keyType", reflect.TypeOf(key).String()))
 			}
 			return true
 		}
@@ -190,15 +190,15 @@ func (manager *Manager) checkRegisteredSessions() {
 			}
 			if ctx == nil || now >= ctx.Deadline() {
 				plog.Debug("registered session has expired:",
-					cfield.String("manager", manager.name),
-					cfield.Uint64("id", svrSess.Id()))
+					pfield.String("manager", manager.name),
+					pfield.Uint64("id", svrSess.Id()))
 				if svrSess.IsClosed() {
 					// 已关闭则直接移除
 					manager.registerSessions.Delete(key)
 				} else {
 					// 失活关闭
 					if err := svrSess.Close(); err != nil {
-						plog.Error("close deadline session error:", cfield.Error(err))
+						plog.Error("close deadline session error:", pfield.Error(err))
 					}
 					// 等到连接关闭时再移除该session
 				}
@@ -206,7 +206,7 @@ func (manager *Manager) checkRegisteredSessions() {
 		} else {
 			manager.registerSessions.Delete(key)
 			plog.Error("there is invalid type value in unregisterSessions",
-				cfield.String("valueType", reflect.TypeOf(value).String()))
+				pfield.String("valueType", reflect.TypeOf(value).String()))
 		}
 		return true
 	})

@@ -98,34 +98,32 @@ func (pool *GoroutinePool) Stop(ctx context.Context) error {
 	if pool.IsStopped() {
 		return ErrGoroutinePoolClosed
 	}
-	// 等待全部任务关闭
-checkLoop:
-	for {
+
+	if !pool.core.IsClosed() {
+		released := make(chan struct{})
+		go func() {
+			// 关闭协程池
+			err := pool.core.ReleaseTimeout(30 * time.Minute) // 等待足够长的时间
+			if err != nil {
+				loggers.Error("release pool error:", zap.Error(err))
+			}
+			released <- struct{}{}
+		}()
 		select {
 		case <-ctx.Done():
-			loggers.Warn("abort GoroutinePool by context", zap.String("poolName", pool.name))
-			break checkLoop
-		default:
-			if pool.core.Running() > 0 || pool.taskQueue.Length() > 0 {
-				time.Sleep(workerExpiryDuration / 4)
-			} else {
-				// 没有等待中的任务则跳出检查
-				break checkLoop
-			}
+			loggers.Warn("cancel GoroutinePool by context", zap.String("poolName", pool.name))
+			break
+		case <-released:
+			// 释放完毕
+			break
 		} // end of select
-	} // end of for
-	// 再次检查是否已关闭
-	if pool.IsStopped() {
-		return ErrGoroutinePoolClosed
 	}
-	// 关闭协程池
-	pool.core.Release()
+	// 关闭任务队列
+	pool.taskQueue.Close()
 	if pool.core.IsClosed() {
-		// 成功关闭则关闭任务队列
-		pool.taskQueue.Close()
 		return nil
 	} else {
-		return errors.New("fail to release pool")
+		return errors.New("pool release failure")
 	}
 }
 

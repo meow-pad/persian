@@ -26,6 +26,7 @@ func TestGoroutinePool_Stop(t *testing.T) {
 			time.Sleep(sleepTime)
 			count.Inc()
 			wg.Done()
+			time.Sleep(1 * time.Second)
 		})
 		should.Nil(err)
 	}
@@ -33,7 +34,7 @@ func TestGoroutinePool_Stop(t *testing.T) {
 	time2 := time.Now().UnixMilli()
 	should.True((time2 - time1) >= int64(sleepTime/time.Millisecond))
 	t.Logf("time diff:%vs", float32(time2-time1)/1000)
-	ctx, cancel := context.WithTimeout(context.TODO(), 3*time.Second)
+	ctx, cancel := context.WithTimeout(context.TODO(), 2*time.Second)
 	defer cancel()
 	err = pool.Stop(ctx)
 	should.Nil(err)

@@ -89,8 +89,14 @@ func Provide(ctor any, args ...arg.Arg) *gs.BeanDefinition {
 func setupLifeCycleModule(bean *gs.BeanDefinition) *gs.BeanDefinition {
 	lifeCycle := bean.Interface().(LifeCycle)
 	if lifeCycle != nil {
-		// 加入到Event中进行排序
-		bean.Export((*gs.AppEvent)(nil))
+		if _, ok := lifeCycle.(gs.AppEvent); ok {
+			// 加入到Event中进行排序
+			bean.Export((*gs.AppEvent)(nil))
+		} else {
+			// 包装后再加入
+			wrapper := &lifeCycleWrapper{lc: lifeCycle}
+			container.Object(wrapper).Export((*gs.AppEvent)(nil))
+		}
 	}
 	return bean
 }

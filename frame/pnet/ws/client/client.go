@@ -6,7 +6,7 @@ import (
 	"github.com/gorilla/websocket"
 	"github.com/meow-pad/persian/errdef"
 	"github.com/meow-pad/persian/frame/plog"
-	"github.com/meow-pad/persian/frame/plog/cfield"
+	"github.com/meow-pad/persian/frame/plog/pfield"
 	"github.com/meow-pad/persian/frame/pnet"
 	"github.com/meow-pad/persian/frame/pnet/message"
 	"github.com/meow-pad/persian/frame/pnet/tcp/session"
@@ -88,7 +88,7 @@ func (client *Client) Dial(ctx context.Context, address string) error {
 		client.conn = nil
 		client.status.Store(StatusInitial)
 		if tErr := conn.Close(); tErr != nil {
-			plog.Error("", cfield.Error(tErr))
+			plog.Error("", pfield.Error(tErr))
 		}
 		return err
 	}
@@ -99,7 +99,7 @@ func (client *Client) Dial(ctx context.Context, address string) error {
 		client.connPT.Store(nil)
 		client.status.Store(StatusInitial)
 		if tErr := conn.Close(); tErr != nil {
-			plog.Error("", cfield.Error(tErr))
+			plog.Error("", pfield.Error(tErr))
 		}
 		return err
 	}
@@ -131,9 +131,9 @@ func (client *Client) CloseWithContext(ctx context.Context) error {
 func (client *Client) toClosed(reason error) bool {
 	if client.status.CompareAndSwap(StatusConnected, StatusClosed) {
 		if reason == nil {
-			plog.Debug("close client", cfield.String("name", client.Name))
+			plog.Debug("close client", pfield.String("name", client.Name))
 		} else {
-			plog.Error("close client", cfield.String("name", client.Name), cfield.NamedError("reason", reason))
+			plog.Error("close client", pfield.String("name", client.Name), pfield.NamedError("reason", reason))
 		}
 		return true
 	}
@@ -156,7 +156,7 @@ func (client *Client) SendMessage(message any) {
 	}
 	buf, err := client.codec.Encode(message)
 	if err != nil {
-		plog.Error("encode message error:", cfield.Error(err))
+		plog.Error("encode message error:", pfield.Error(err))
 		return
 	}
 	bufLen := len(buf)
@@ -166,12 +166,12 @@ func (client *Client) SendMessage(message any) {
 			return nil
 		}
 		if err = client.listener.OnSend(client, message, bufLen); err != nil {
-			plog.Error("on send error:", cfield.Error(err))
+			plog.Error("on send error:", pfield.Error(err))
 		}
 		return nil
 	})
 	if err != nil {
-		plog.Error("async write error:", cfield.Error(err))
+		plog.Error("async write error:", pfield.Error(err))
 	}
 }
 
@@ -187,10 +187,10 @@ func (client *Client) SendMessages(messages ...any) {
 	}
 	totalLen := 0
 	dataArr := make([][]byte, 0, len(messages))
-	for _, message := range messages {
-		data, err := client.codec.Encode(message)
+	for _, msg := range messages {
+		data, err := client.codec.Encode(msg)
 		if err != nil {
-			client.onSendingError("encode message error:", err)
+			client.onSendingError("encode msg error:", err)
 			return
 		}
 		dataArr = append(dataArr, data)
@@ -198,16 +198,16 @@ func (client *Client) SendMessages(messages ...any) {
 	}
 	err := client.loop.asyncWritev(dataArr, func(c *Conn, err error) error {
 		if err != nil {
-			client.onSendingError("write message error:", err)
+			client.onSendingError("write msg error:", err)
 			return nil
 		}
 		if err = client.listener.OnSendMulti(client, messages, totalLen); err != nil {
-			plog.Error("on send multi error:", cfield.Error(err))
+			plog.Error("on send multi error:", pfield.Error(err))
 		}
 		return nil
 	})
 	if err != nil {
-		plog.Error("async writev error:", cfield.Error(err))
+		plog.Error("async writev error:", pfield.Error(err))
 	}
 }
 
@@ -218,10 +218,10 @@ func (client *Client) SendMessages(messages ...any) {
 //	@param tip 日志消息
 //	@param err 错误
 func (client *Client) onSendingError(tip string, err error) {
-	plog.Error(tip, cfield.Error(err))
+	plog.Error(tip, pfield.Error(err))
 	// 无法处理的状态，关闭连接
 	cErr := client.Close()
 	if cErr != nil {
-		plog.Error("close conn error", cfield.Error(cErr))
+		plog.Error("close conn error", pfield.Error(cErr))
 	}
 }

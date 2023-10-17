@@ -3,7 +3,7 @@ package server
 import (
 	"github.com/meow-pad/persian/errdef"
 	"github.com/meow-pad/persian/frame/plog"
-	"github.com/meow-pad/persian/frame/plog/cfield"
+	"github.com/meow-pad/persian/frame/plog/pfield"
 	"github.com/meow-pad/persian/frame/pnet"
 	"github.com/meow-pad/persian/frame/pnet/tcp/session"
 )
@@ -57,6 +57,10 @@ func (sess *svrSession) IsClosed() bool {
 }
 
 func (sess *svrSession) SendMessage(message any) {
+	if closed, _ := sess.conn.IsClosed(); closed {
+		plog.Debug("cant send to closed conn")
+		return
+	}
 	data, err := sess.server.codec.Encode(message)
 	if err != nil {
 		sess.onSendingError("encode message error:", err)
@@ -69,7 +73,7 @@ func (sess *svrSession) SendMessage(message any) {
 			return nil
 		}
 		if err = sess.server.listener.OnSend(sess, message, dataLen); err != nil {
-			plog.Error("on send error:", cfield.Error(err))
+			plog.Error("on send error:", pfield.Error(err))
 		}
 		return nil
 	})
@@ -79,6 +83,10 @@ func (sess *svrSession) SendMessage(message any) {
 }
 
 func (sess *svrSession) SendMessages(messages ...any) {
+	if closed, _ := sess.conn.IsClosed(); closed {
+		plog.Debug("cant send to closed conn")
+		return
+	}
 	totalLen := 0
 	dataArr := make([][]byte, 0, len(messages))
 	for _, message := range messages {
@@ -96,7 +104,7 @@ func (sess *svrSession) SendMessages(messages ...any) {
 			return nil
 		}
 		if err = sess.server.listener.OnSendMulti(sess, messages, totalLen); err != nil {
-			plog.Error("on send error:", cfield.Error(err))
+			plog.Error("on send error:", pfield.Error(err))
 		}
 		return nil
 	})
@@ -112,10 +120,10 @@ func (sess *svrSession) SendMessages(messages ...any) {
 //	@param tip 日志消息
 //	@param err 错误
 func (sess *svrSession) onSendingError(tip string, err error) {
-	plog.Error(tip, cfield.Error(err))
+	plog.Error(tip, pfield.Error(err))
 	// 无法处理的状态，关闭连接
 	cErr := sess.conn.Close()
 	if cErr != nil {
-		plog.Error("close conn error", cfield.Error(cErr))
+		plog.Error("close conn error", pfield.Error(cErr))
 	}
 }

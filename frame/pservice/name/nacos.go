@@ -7,6 +7,14 @@ import (
 	"github.com/nacos-group/nacos-sdk-go/v2/vo"
 )
 
+func NewNacosNaming(cCfg *constant.ClientConfig, sCfg []constant.ServerConfig) (*NacosNaming, error) {
+	nacosNaming := &NacosNaming{}
+	if err := nacosNaming.init(cCfg, sCfg); err != nil {
+		return nil, err
+	}
+	return nacosNaming, nil
+}
+
 type NacosNaming struct {
 	naming_client.INamingClient
 }
