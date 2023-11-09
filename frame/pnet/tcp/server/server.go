@@ -88,6 +88,6 @@ func (server *Server) Stop(ctx context.Context) error {
 	return server.engine.Stop(ctx)
 }
 
-func (server *Server) CName() string {
+func (server *Server) Name() string {
 	return server.name
 }

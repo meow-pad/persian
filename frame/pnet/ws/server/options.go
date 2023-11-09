@@ -54,7 +54,7 @@ func NewOptions(opts ...Option) (*Options, error) {
 			Logger: plog.SugarLogger(),
 		},
 		UnregisterSessionLife: 20,
-		CheckSessionInterval:  30 * time.Second,
+		CheckSessionInterval:  20 * time.Second,
 	}
 
 	for _, opt := range opts {
@@ -79,5 +79,17 @@ func WithGNetOption(options ...gnet.Option) Option {
 		for _, option := range options {
 			option(&opts.GNetOptions)
 		}
+	}
+}
+
+func WithUnregisterSessionLife(value int64) Option {
+	return func(opts *Options) {
+		opts.UnregisterSessionLife = value
+	}
+}
+
+func WithCheckSessionInterval(value time.Duration) Option {
+	return func(opts *Options) {
+		opts.CheckSessionInterval = value
 	}
 }

@@ -67,14 +67,14 @@ type Pool interface {
 
 	// Submit
 	//	@Description: 提交任务到工作池
-	//	@param taskCategory 任务分类
+	//	@param group 任务分组
 	//	@param task 任务
 	//	@return error 提交失败时返回错误
 	//		如果工作队列已满,将返回 ErrWorkerPoolQueueIsFull 错误;
 	//		如果工作池已经被关闭,则将返回 ErrWorkerPoolClosed 错误;
 	//	@throwable 提交任务时可能会抛出异常,在必要时自行捕捉
 	//
-	Submit(category int, task func(*GoroutineLocal)) error
+	Submit(group int, task func(*GoroutineLocal)) error
 
 	// Shutdown
 	//	@Description: 关闭工作池

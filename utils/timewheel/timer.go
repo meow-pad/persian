@@ -49,14 +49,14 @@ func (t *Task) Reset() {
 	t.circle = false
 }
 
-type OptionCall func(*TimeWheel) error
+type Option func(*TimeWheel) error
 
-// SetGoPool
+// WithGoPool
 //
 //	@Description: 设置执行池
-//	@param goPool *gopool.GoroutinePool
-//	@return OptionCall
-func SetGoPool(goPool *gopool.GoroutinePool) OptionCall {
+//	@param goPool
+//	@return Option
+func WithGoPool(goPool *gopool.GoroutinePool) Option {
 	return func(o *TimeWheel) error {
 		o.goPool = goPool
 		return nil
@@ -64,7 +64,7 @@ func SetGoPool(goPool *gopool.GoroutinePool) OptionCall {
 }
 
 // NewTimeWheel create new time wheel
-func NewTimeWheel(tick time.Duration, bucketsNum int, options ...OptionCall) (*TimeWheel, error) {
+func NewTimeWheel(tick time.Duration, bucketsNum int, options ...Option) (*TimeWheel, error) {
 	tw := &TimeWheel{}
 	if err := tw.init(tick, bucketsNum, options...); err != nil {
 		return nil, err
@@ -74,8 +74,8 @@ func NewTimeWheel(tick time.Duration, bucketsNum int, options ...OptionCall) (*T
 
 // TimeWheel
 //
-//		@Description: 时间轮 的实现
-//	 	代码参考自 https://github.com/rfyiamcool/go-timewheel
+//	@Description: 时间轮 的实现
+//		代码参考自 https://github.com/rfyiamcool/go-timewheel
 type TimeWheel struct {
 	randomID atomic.Int64
 
@@ -99,7 +99,7 @@ type TimeWheel struct {
 	sync.RWMutex
 }
 
-func (tw *TimeWheel) init(tick time.Duration, bucketsNum int, options ...OptionCall) error {
+func (tw *TimeWheel) init(tick time.Duration, bucketsNum int, options ...Option) error {
 	if tick.Milliseconds() < 1 {
 		return errors.New("invalid params, must tick >= 1 ms")
 	}

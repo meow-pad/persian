@@ -32,18 +32,16 @@ func NewFixedWorkerPool(slotNum, queueSize int, blockingOnFull bool) (*FixedWork
 func newFixedPoolWorker(pool *FixedWorkerPool, allocateQueueSize int) *fixedPoolWorker {
 	return &fixedPoolWorker{
 		pool:  pool,
-		queue: make(chan FixedPoolTask, allocateQueueSize),
+		queue: make(chan func(*GoroutineLocal), allocateQueueSize),
 	}
 }
-
-type FixedPoolTask func(*GoroutineLocal)
 
 // fixedPoolWorker
 //
 //	@Description: 固定工作器池的工作器
 type fixedPoolWorker struct {
 	pool  *FixedWorkerPool
-	queue chan FixedPoolTask
+	queue chan func(*GoroutineLocal)
 	local GoroutineLocal
 }
 
@@ -109,7 +107,7 @@ func (pool *FixedWorkerPool) init(slotNum, queueSize int, blockingOnFull bool) e
 	return nil
 }
 
-func (pool *FixedWorkerPool) Submit(group int, task FixedPoolTask) error {
+func (pool *FixedWorkerPool) Submit(group int, task func(*GoroutineLocal)) error {
 	if pool.closed.Load() {
 		return ErrWorkerPoolClosed
 	}
@@ -135,7 +133,7 @@ func (pool *FixedWorkerPool) Submit(group int, task FixedPoolTask) error {
 	} // end of else
 }
 
-func (pool *FixedWorkerPool) SubmitToAll(task FixedPoolTask, blockingOnFull bool) error {
+func (pool *FixedWorkerPool) SubmitToAll(task func(*GoroutineLocal), blockingOnFull bool) error {
 	if pool.closed.Load() {
 		return ErrWorkerPoolClosed
 	}

@@ -1,5 +1,7 @@
 package pboot
 
+import "fmt"
+
 type Env int32
 
 const (
@@ -21,9 +23,29 @@ const (
 	envProductName     = "pro"
 )
 
-// 环境变量名
-const (
-	osEnvNameEnvironment = "SRV_ENVIRONMENT"
-	osEnvNameCluster     = "SRV_CLUSTER"
-	osEnvNameTimeZone    = "SRV_TIMEZONE"
-)
+func IsEnvName(name string) bool {
+	switch name {
+	case envLocalName, envDevelopmentName, envTestName, envProductName:
+		return true
+	default:
+		return false
+	}
+}
+
+func ToEnv(envName string) (Env, error) {
+	var env Env
+	switch envName {
+	case envLocalName:
+		env = EnvLocal
+	case envDevelopmentName:
+		env = EnvDevelopment
+	case envTestName:
+		env = EnvTest
+	case envProductName:
+		env = EnvProduct
+	default:
+		env = EnvInvalid
+		return env, fmt.Errorf("unknown environment:%s", envName)
+	}
+	return env, nil
+}

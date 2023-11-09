@@ -10,7 +10,7 @@ import (
 
 const (
 	consoleSeparator = " | "
-	defaultLogDir    = "/var/logs/"
+	defaultLogDir    = "/var/log/"
 )
 
 var (
@@ -42,19 +42,26 @@ type Config struct {
 //	@Description: 构建开发模式默认配置
 //	@param appName string
 //	@param appId string
+//	@param logDir string
 //	@return *Config
-func NewDevConfig(appName, appId string) *Config {
-	return &Config{
-		AppName:     appName,
-		AppId:       appId,
-		Development: true,
-		LogLevel:    zapcore.DebugLevel,
-		//LogsDirectory:    "./logs/"+appName+"/",
-		//LogsFilenamePattern: "%Y-%m-%d.plog",
-		//LogsMaxAge:       time.Hour * 24 * 7,
-		//LogsRotationSize: 50_000_000,
+func NewDevConfig(appName, appId string, logDir string) *Config {
+	cfg := &Config{
+		AppName:       appName,
+		AppId:         appId,
+		Development:   true,
+		LogLevel:      zapcore.DebugLevel,
 		ZapLogEncoder: newZapEncoder(true),
 	}
+	if len(logDir) > 0 {
+		if logDir[len(logDir)-1] != '/' {
+			logDir += "/"
+		}
+		cfg.LogsDirectory = logDir + appName + "/"
+		cfg.LogsFilenamePattern = "%Y-%m-%d.log"
+		cfg.LogsMaxAge = time.Hour * 24 * 7
+		cfg.LogsRotationSize = 50_000_000
+	}
+	return cfg
 }
 
 // NewProConfig
@@ -62,16 +69,26 @@ func NewDevConfig(appName, appId string) *Config {
 //	@Description: 构建生产模式的默认配置
 //	@param appName string
 //	@param appId string
+//	@param logLevel int8
+//	@param logDir string
+//	@param logsMaxDay int64
 //	@return *Config
-func NewProConfig(appName, appId string) *Config {
+func NewProConfig(appName, appId string, logLevel Level, logDir string, logsMaxDay int64) *Config {
+	if len(logDir) <= 0 {
+		logDir = defaultLogDir
+	} else {
+		if logDir[len(logDir)-1] != '/' {
+			logDir += "/"
+		}
+	}
 	return &Config{
 		AppName:             appName,
 		AppId:               appId,
 		Development:         false,
-		LogLevel:            zapcore.InfoLevel,
-		LogsDirectory:       defaultLogDir + appName + "/",
-		LogsFilenamePattern: "%Y-%m-%d.plog",
-		LogsMaxAge:          time.Hour * 24 * 30,
+		LogLevel:            zapcore.Level(logLevel),
+		LogsDirectory:       logDir + appName + "/",
+		LogsFilenamePattern: "%Y-%m-%d.log",
+		LogsMaxAge:          time.Hour * 24 * time.Duration(logsMaxDay),
 		LogsRotationTime:    time.Hour * 24,
 		ZapLogEncoder:       newZapEncoder(false),
 	}

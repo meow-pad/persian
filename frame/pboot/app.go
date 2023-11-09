@@ -1,59 +1,29 @@
 package pboot
 
 import (
-	"fmt"
-	"github.com/go-spring/spring-base/util"
 	"github.com/go-spring/spring-core/gs"
 	"github.com/go-spring/spring-core/gs/arg"
 	"github.com/go-spring/spring-core/web"
-	"github.com/meow-pad/persian/frame/passert"
 	"net/http"
-	"os"
-	"reflect"
 )
 
 var (
-	app       *gs.App
-	container gs.Container
+	app *gs.App
 )
 
 func initApp() {
 	app = gs.NewApp()
-	vApp := reflect.ValueOf(app)
-	fmt.Println(vApp.FieldByName("c"))
-	container = vApp.FieldByName("c").Interface().(gs.Container)
-	passert.NotNil(container, "empty app container")
-}
-
-// Setenv 封装 os.Setenv 函数，如果发生 error 会 panic 。
-func Setenv(key string, value string) {
-	err := os.Setenv(key, value)
-	util.Panic(err).When(err != nil)
-}
-
-type startup struct {
-	web bool
-}
-
-func webStartup(enable bool) *startup {
-	return &startup{web: enable}
-}
-
-func (s *startup) Run() error {
-	if s.web {
-		Object(new(gs.WebStarter)).Export((*gs.AppEvent)(nil))
-	}
-	return app.Run()
 }
 
 // Run 启动程序。
 func Run() error {
-	return webStartup(true).Run()
+	return app.Run()
 }
 
 // RunWithWeb 带web启动。
 func RunWithWeb() error {
-	return webStartup(true).Run()
+	gs.Object(new(gs.WebStarter)).Export((*gs.AppEvent)(nil))
+	return app.Run()
 }
 
 // ShutDown 停止程序。
@@ -76,18 +46,50 @@ func Property(key string, value any) {
 	app.Property(key, value)
 }
 
+func InternalObject(i any) *Bean {
+	return setupLifeCycleModule(app.Object(i), OrderInternal)
+}
+
+func InternalProvide(ctor any, args ...arg.Arg) *Bean {
+	return setupLifeCycleModule(app.Provide(ctor, args...), OrderInternal)
+}
+
+func ConfigObject(i any) *Bean {
+	return setupLifeCycleModule(app.Object(i), OrderConfig)
+}
+
+func ConfigProvide(ctor any, args ...arg.Arg) *Bean {
+	return setupLifeCycleModule(app.Provide(ctor, args...), OrderConfig)
+}
+
+func DBObject(i any) *Bean {
+	return setupLifeCycleModule(app.Object(i), OrderDB)
+}
+
+func DBProvide(ctor any, args ...arg.Arg) *Bean {
+	return setupLifeCycleModule(app.Provide(ctor, args...), OrderDB)
+}
+
+func ToolsObject(i any) *Bean {
+	return setupLifeCycleModule(app.Object(i), OrderTools)
+}
+
+func ToolsProvide(ctor any, args ...arg.Arg) *Bean {
+	return setupLifeCycleModule(app.Provide(ctor, args...), OrderTools)
+}
+
 // Object 参考 Container.Object 的解释。
-func Object(i any) *gs.BeanDefinition {
-	return setupLifeCycleModule(container.Object(i))
+func Object(i any) *Bean {
+	return setupLifeCycleModule(app.Object(i), OrderCustom)
 }
 
 // Provide 参考 Container.Provide 的解释。
-func Provide(ctor any, args ...arg.Arg) *gs.BeanDefinition {
-	return setupLifeCycleModule(container.Provide(ctor, args...))
+func Provide(ctor any, args ...arg.Arg) *Bean {
+	return setupLifeCycleModule(app.Provide(ctor, args...), OrderCustom)
 }
 
-func setupLifeCycleModule(bean *gs.BeanDefinition) *gs.BeanDefinition {
-	lifeCycle := bean.Interface().(LifeCycle)
+func setupLifeCycleModule(bean *gs.BeanDefinition, baseOrder float32) *Bean {
+	lifeCycle, _ := bean.Interface().(LifeCycle)
 	if lifeCycle != nil {
 		if _, ok := lifeCycle.(gs.AppEvent); ok {
 			// 加入到Event中进行排序
@@ -95,10 +97,10 @@ func setupLifeCycleModule(bean *gs.BeanDefinition) *gs.BeanDefinition {
 		} else {
 			// 包装后再加入
 			wrapper := &lifeCycleWrapper{lc: lifeCycle}
-			container.Object(wrapper).Export((*gs.AppEvent)(nil))
+			app.Object(wrapper).Name(wrapper.CName()).Export((*gs.AppEvent)(nil))
 		}
 	}
-	return bean
+	return newBean(bean, baseOrder).Order(1)
 }
 
 // HandleGet 参考 App.HandleGet 的解释。

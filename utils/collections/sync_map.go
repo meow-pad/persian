@@ -1,6 +1,8 @@
 package collections
 
-import "sync"
+import (
+	"sync"
+)
 
 type SyncMap[K, V any] struct {
 	syncMap sync.Map

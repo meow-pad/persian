@@ -24,6 +24,8 @@ type LengthOptions struct {
 	ByteOrder binary.ByteOrder
 	// 消息长度所占字节数
 	LengthSize int
+	// 大消息编码函数
+	EncodeLargeMessage func(largeMsg []byte, maxLen int) (out []byte, err error)
 }
 
 func (opts *LengthOptions) Complete() error {
@@ -53,6 +55,12 @@ func WithByteOrder(value binary.ByteOrder) Option[*LengthOptions] {
 func WithLengthSize(value int) Option[*LengthOptions] {
 	return func(options *LengthOptions) {
 		options.LengthSize = value
+	}
+}
+
+func WithEncodeLargeMessage(function func(largeMsg []byte, maxLen int) (out []byte, err error)) Option[*LengthOptions] {
+	return func(options *LengthOptions) {
+		options.EncodeLargeMessage = function
 	}
 }
 
@@ -100,7 +108,11 @@ func (codec *lengthFieldCodec) Encode(msg any) (out []byte, err error) {
 	bodyLen := len(bodyBuf)
 	if bodyLen > 0 {
 		if bodyLen > codec.maxEncodedLength {
-			err = pnet.ErrMessageTooLarge
+			if codec.EncodeLargeMessage != nil {
+				out, err = codec.EncodeLargeMessage(bodyBuf, codec.maxEncodedLength)
+			} else {
+				err = pnet.ErrMessageTooLarge
+			}
 			return
 		}
 		if bodyLen > codec.warningEncodedLength {

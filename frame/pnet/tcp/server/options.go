@@ -81,3 +81,15 @@ func WithGNetOption(options ...gnet.Option) Option {
 		}
 	}
 }
+
+func WithUnregisterSessionLife(value int64) Option {
+	return func(opts *Options) {
+		opts.UnregisterSessionLife = value
+	}
+}
+
+func WithCheckSessionInterval(value time.Duration) Option {
+	return func(opts *Options) {
+		opts.CheckSessionInterval = value
+	}
+}
