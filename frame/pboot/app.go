@@ -88,19 +88,13 @@ func Provide(ctor any, args ...arg.Arg) *Bean {
 	return setupLifeCycleModule(app.Provide(ctor, args...), OrderCustom)
 }
 
-func setupLifeCycleModule(bean *gs.BeanDefinition, baseOrder float32) *Bean {
-	lifeCycle, _ := bean.Interface().(LifeCycle)
+func setupLifeCycleModule(beanDef *gs.BeanDefinition, baseOrder float32) *Bean {
+	bean := newBean(beanDef, baseOrder).Order(1)
+	lifeCycle, _ := beanDef.Interface().(LifeCycle)
 	if lifeCycle != nil {
-		if _, ok := lifeCycle.(gs.AppEvent); ok {
-			// 加入到Event中进行排序
-			bean.Export((*gs.AppEvent)(nil))
-		} else {
-			// 包装后再加入
-			wrapper := &lifeCycleWrapper{lc: lifeCycle}
-			app.Object(wrapper).Name(wrapper.CName()).Export((*gs.AppEvent)(nil))
-		}
+		addLifeCycle(lifeCycle, bean)
 	}
-	return newBean(bean, baseOrder).Order(1)
+	return bean
 }
 
 // HandleGet 参考 App.HandleGet 的解释。

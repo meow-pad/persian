@@ -19,6 +19,7 @@ func newBean(inner *gs.BeanDefinition, baseOrder float32) *Bean {
 type Bean struct {
 	inner     *gs.BeanDefinition
 	baseOrder float32
+	bOrder    float32
 }
 
 // Type 返回 bean 的类型。
@@ -94,6 +95,7 @@ func (d *Bean) Order(order float32) *Bean {
 		plog.Panic("build order error:", pfield.Error(err))
 	}
 	d.inner.Order(bOrder)
+	d.bOrder = bOrder
 	return d
 }
 

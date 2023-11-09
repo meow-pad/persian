@@ -2,7 +2,6 @@ package utils
 
 import (
 	"fmt"
-	"github.com/meow-pad/persian/errdef"
 	"strings"
 )
 
@@ -50,7 +49,7 @@ func GetAddress(protoAddr string) (proto string, address string, err error) {
 		address = protoAddr[index+len(separator):]
 		return
 	} else {
-		err = errdef.ErrInvalidParams
+		err = fmt.Errorf("invalid protoAddr(%s), something like 'tcp://192.168.0.10:9851'", protoAddr)
 		return
 	}
 }
