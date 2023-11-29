@@ -1,7 +1,9 @@
 package pfield
 
 import (
+	jsoniter "github.com/json-iterator/go"
 	"go.uber.org/zap"
+	"go.uber.org/zap/zapcore"
 )
 
 var (
@@ -57,3 +59,20 @@ var (
 	Inline      = zap.Inline
 	Dict        = zap.Dict
 )
+
+var json = jsoniter.ConfigCompatibleWithStandardLibrary
+
+type jsonObject struct {
+	object any
+}
+
+func (obj jsonObject) String() string {
+	data, _ := json.Marshal(obj.object)
+	return string(data)
+}
+
+func JsonString(key string, val any) zapcore.Field {
+	return zap.Stringer(key, jsonObject{
+		object: val,
+	})
+}
