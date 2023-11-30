@@ -42,12 +42,33 @@ func Uint64() uint64 {
 	return uint64(fastrand.Uint32()) | (uint64(fastrand.Uint32()) << 32)
 }
 
+// Uint64n
+//
+//	@Description: 返回一个非负的64位整数，随机数范围为[0, maxN)
+//	@param maxN
+//	@return uint64
 func Uint64n(maxN uint64) uint64 {
 	return uint64(Float64() * float64(maxN))
 }
 
+// Int64
+//
+//	@Description: 返回一个非负的64位整数，随机数范围为[0, math.MaxInt64]
+//	@return int64
 func Int64() int64 {
-	return int64(Uint64())
+	return int64(Uint64() << 1 >> 1)
+}
+
+// Int64n
+//
+//	@Description: 返回一个非负的64位整数，随机数范围为[0, maxN)
+//	@param maxN
+//	@return int64
+func Int64n(maxN int64) int64 {
+	if maxN <= 0 {
+		panic("maxN should be >= 0")
+	}
+	return int64(Uint64n(uint64(maxN)))
 }
 
 func Float32() float32 {

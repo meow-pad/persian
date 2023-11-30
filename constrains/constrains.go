@@ -53,3 +53,11 @@ type Ordered interface {
 type Comparable interface {
 	Signed | Unsigned | Float | ~string
 }
+
+type Number interface {
+	Signed | Unsigned | Float
+}
+
+type SignedNumber interface {
+	Signed | Float
+}

@@ -27,3 +27,11 @@ func Clamp[T constraints.Comparable](value, min, max T) T {
 		return value
 	}
 }
+
+func Abs[T constraints.SignedNumber](value T) T {
+	if value < 0 {
+		return -value
+	} else {
+		return value
+	}
+}
