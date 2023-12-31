@@ -16,8 +16,8 @@ import (
 )
 
 const (
-	luaAnUKeyCount = 1
-	luaAnUSource   = `
+	luaAddKeyCount = 1
+	luaAddSource   = `
 local cacheKey = KEYS[1]
 local cacheValue = ARGV[1]
 local signature = ARGV[2]
@@ -178,7 +178,7 @@ func (cache *Cache) init(pool *predis.Pool, secTimer *timewheel.TimeWheel) (err 
 	}
 	cache.pool = pool
 	cache.secTimer = secTimer
-	cache.anuScript, err = cache.pool.NewScript(luaAnUSource, luaAnUKeyCount, true)
+	cache.anuScript, err = cache.pool.NewScript(luaAddSource, luaAddKeyCount, true)
 	cache.delScript, err = cache.pool.NewScript(luaDelSource, luaDelKeyCount, true)
 	return
 }

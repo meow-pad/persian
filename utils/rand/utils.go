@@ -75,6 +75,24 @@ func Float32() float32 {
 	return float32(fastrand.Uint32()) / math.MaxUint32
 }
 
+// Float32n
+//
+//	@Description: 返回一个非负的32浮点数，随机数范围为[0, maxN)
+//	@param maxN
+//	@return float32
+func Float32n(maxN float32) float32 {
+	return Float32() * maxN
+}
+
 func Float64() float64 {
 	return float64(Uint64()) / math.MaxUint64
+}
+
+// Float64n
+//
+//	@Description: 返回一个非负的64浮点数，随机数范围为[0, maxN)
+//	@param maxN
+//	@return float64
+func Float64n(maxN float64) float64 {
+	return Float64() * maxN
 }
