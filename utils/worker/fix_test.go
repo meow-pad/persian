@@ -1,9 +1,9 @@
 package worker
 
 import (
+	"context"
 	"errors"
 	"github.com/stretchr/testify/require"
-	"golang.org/x/net/context"
 	"testing"
 	"time"
 )
