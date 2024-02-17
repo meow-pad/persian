@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/meow-pad/persian/errdef"
+	"github.com/pkg/errors"
 	"reflect"
 )
 
@@ -26,6 +27,7 @@ func SafeRunAnyParams(function func(params ...any) error, params ...any) (result
 			} else {
 				resultErr = eErr
 			}
+			resultErr = errors.WithStack(resultErr)
 		}
 	}()
 	resultErr = function(params...)
@@ -49,6 +51,7 @@ func SafeRunSimple(function func()) (resultErr error) {
 			} else {
 				resultErr = eErr
 			}
+			resultErr = errors.WithStack(resultErr)
 		}
 	}()
 	function()
@@ -74,6 +77,7 @@ func SafeRunWithContext(function func(ctx context.Context) error, ctx context.Co
 			} else {
 				resultErr = eErr
 			}
+			resultErr = errors.WithStack(resultErr)
 		}
 	}()
 	resultErr = function(ctx)
@@ -115,6 +119,7 @@ func SafeRunReflect(fn any, args ...any) (resultErr error) {
 			} else {
 				resultErr = eErr
 			}
+			resultErr = errors.WithStack(resultErr)
 		}
 	}()
 	// 执行

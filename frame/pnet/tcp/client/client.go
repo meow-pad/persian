@@ -143,6 +143,19 @@ func (client *Client) IsClosed() bool {
 	return client.status.Load() != StatusConnected
 }
 
+// AsyncWrite
+//
+//	@Description: 异步写字节数组数据
+//	@receiver client
+//	@param buf
+//	@param callback
+func (client *Client) AsyncWrite(buf []byte, callback func(c session.Conn, err error) error) {
+	err := client.loop.asyncWrite(buf, callback)
+	if err != nil {
+		plog.Error("async write error:", pfield.Error(err))
+	}
+}
+
 // SendMessage
 //
 //	@Description: 发送消息

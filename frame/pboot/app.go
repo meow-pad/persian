@@ -78,6 +78,14 @@ func ToolsProvide(ctor any, args ...arg.Arg) *Bean {
 	return setupLifeCycleModule(app.Provide(ctor, args...), OrderTools)
 }
 
+func BaseObject(i any) *Bean {
+	return setupLifeCycleModule(app.Object(i), OrderCustomBase)
+}
+
+func BaseProvide(ctor any, args ...arg.Arg) *Bean {
+	return setupLifeCycleModule(app.Provide(ctor, args...), OrderCustomBase)
+}
+
 // Object 参考 Container.Object 的解释。
 func Object(i any) *Bean {
 	return setupLifeCycleModule(app.Object(i), OrderCustom)
