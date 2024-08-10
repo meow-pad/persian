@@ -72,12 +72,15 @@ func (client *Client) init(codec message.Codec, listener session.Listener, optio
 //	@param ctx
 //	@param address 如：127.0.0.1:9999
 //	@return error
-func (client *Client) Dial(ctx context.Context, address string) error {
+func (client *Client) Dial(ctx context.Context, wsUrl *url.URL) error {
 	if !client.status.CompareAndSwap(StatusInitial, StatusConnecting) {
 		return ErrInvalidStatus
 	}
 	client.status.Store(StatusConnecting)
-	wsUrl := url.URL{Scheme: utils.ProtoWebsocket, Host: address, Path: "/"}
+	//wsUrl := url.URL{Scheme: utils.ProtoWebsocket, Host: address, Path: "/"}
+	if wsUrl == nil || wsUrl.Scheme != utils.ProtoWebsocket {
+		return errors.New("invalid websocket url")
+	}
 	var dialer websocket.Dialer
 	conn, _, err := dialer.DialContext(ctx, wsUrl.String(), nil)
 	if err != nil {

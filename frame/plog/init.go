@@ -163,6 +163,6 @@ func CoreLogger() *zap.Logger {
 	return defaultLogger.inner
 }
 
-func LoggerLevel() zapcore.Level {
-	return defaultLogger.LoggerLevel()
+func LoggerLevel() Level {
+	return Level(defaultLogger.LoggerLevel())
 }

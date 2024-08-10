@@ -7,6 +7,19 @@ import (
 	"os"
 )
 
+// IsEnabled
+//
+//	@Description: 判定是否是可输出的日志等级
+//	@param level
+//	@return bool
+func IsEnabled(level Level) bool {
+	if defaultLogger.inner != nil {
+		return defaultLogger.inner.Core().Enabled(zapcore.Level(level))
+	} else {
+		return level >= DPanicLevel
+	}
+}
+
 // Enabled
 //
 //	@Description: 判定是否是可输出的日志等级

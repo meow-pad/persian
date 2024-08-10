@@ -180,7 +180,7 @@ func (tw *TimeWheel) handleTick() {
 
 	bucket := tw.buckets[tw.currentIndex]
 	for k, task := range bucket {
-		if task.stop {
+		if task.stop || task.callback == nil {
 			tw.collectTask(task)
 			continue
 		}

@@ -4,9 +4,11 @@ import (
 	"context"
 	"github.com/meow-pad/persian/frame/pnet/message"
 	"github.com/meow-pad/persian/frame/pnet/tcp/session"
+	"github.com/meow-pad/persian/frame/pnet/utils"
 	"github.com/meow-pad/persian/frame/pnet/ws/client"
 	"github.com/meow-pad/persian/frame/pnet/ws/server"
 	"github.com/stretchr/testify/require"
+	"net/url"
 	"testing"
 	"time"
 )
@@ -84,7 +86,8 @@ func TestWS_Echo(t *testing.T) {
 	should.Nil(err)
 	echoCLi, err := newClient(&cliListener{t: t})
 	should.Nil(err)
-	err = echoCLi.Dial(context.Background(), addr)
+	wsUrl := &url.URL{Scheme: utils.ProtoWebsocket, Host: addr, Path: "/"}
+	err = echoCLi.Dial(context.Background(), wsUrl)
 	should.Nil(err)
 	echoCLi.SendMessage("123")
 	echoCLi.SendMessage("456")

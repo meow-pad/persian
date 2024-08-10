@@ -15,6 +15,7 @@ func (sMap *SyncMap[K, V]) Store(key K, value V) {
 func (sMap *SyncMap[K, V]) LoadOrStore(key K, value V) (actual V, loaded bool) {
 	sActual, sLoaded := sMap.syncMap.LoadOrStore(key, value)
 	if !sLoaded {
+		actual = value
 		loaded = false
 		return
 	}

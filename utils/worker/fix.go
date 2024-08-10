@@ -114,6 +114,9 @@ func (pool *FixedWorkerPool) Submit(group int, task func(*GoroutineLocal)) error
 	index := 0
 	if pool.slotNum > 1 {
 		index = group % pool.slotNum
+		if index < 0 {
+			index = -index
+		}
 	}
 	worker := pool.taskWorkers[index]
 	if pool.blockingOnFull {
