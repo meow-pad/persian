@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 	"github.com/meow-pad/persian/errdef"
+	"github.com/meow-pad/persian/frame/plog/pfield"
+	"github.com/meow-pad/persian/utils/loggers"
 	"github.com/pkg/errors"
 	"reflect"
 )
@@ -130,4 +132,10 @@ func SafeRunReflect(fn any, args ...any) (resultErr error) {
 		resultErr = Cast[error](result[rLen-1].Interface())
 	}
 	return
+}
+
+func LogFuncError(fn func() error, errMsg string) {
+	if err := fn(); err != nil {
+		loggers.Error(errMsg, pfield.Error(err))
+	}
 }

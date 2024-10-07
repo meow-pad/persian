@@ -15,6 +15,10 @@ import (
 	"time"
 )
 
+var (
+	ErrCacheExist = errors.New("cache exist")
+)
+
 const (
 	luaAddKeyCount = 1
 	luaAddSource   = `
@@ -22,22 +26,22 @@ local cacheKey = KEYS[1]
 local cacheValue = ARGV[1]
 local signature = ARGV[2]
 local lenSignature = ARGV[3]
-local expireTime = ARGV[4]
+local expireSec = ARGV[4]
 local existValue = redis.call("get", cacheKey)
 if (existValue) then
     if (string.sub(existValue, 1, lenSignature) == signature) then
-        if (redis.call("set", cacheKey, cacheValue, "PX", expireTime)) then
+        if (redis.call("set", cacheKey, cacheValue, "PX", expireSec)) then
             return "1:update"
         else
             return "0:errorSet"
         end
     else
         --签名未匹配，被其他服务占用
-        return "0:cacheExist"
+        return "0:cacheExist:"..string.sub(existValue, lenSignature+1)
     end
 else
     --不存在则直接设置
-    if (redis.call("set", cacheKey, cacheValue, "NX", "PX", expireTime)) then
+    if (redis.call("set", cacheKey, cacheValue, "NX", "PX", expireSec)) then
         return "1:insert"
     else
         return "0:errorSetNX"
@@ -67,8 +71,9 @@ else
 end
 `
 
-	replyErrorStart    = "0:"
-	replyErrorStartLen = len(replyErrorStart)
+	replyErrorStart      = "0:"
+	replyErrorStartLen   = len(replyErrorStart)
+	replyErrorCacheExist = "0:cacheExist"
 
 	signatureLen = 9
 )
@@ -76,20 +81,20 @@ end
 func newKeepaliveTask(
 	cache *Cache,
 	key string, value string,
-	signature string, expireMillSec int64,
+	signature string, expireSec int64,
 	interval time.Duration,
 	retryNum int, retryDelay time.Duration,
 	callback KeepaliveCallback) *KeepaliveTask {
 	return &KeepaliveTask{
-		cache:         cache,
-		key:           key,
-		value:         value,
-		signature:     signature,
-		expireMillSec: expireMillSec,
-		interval:      interval,
-		retryNum:      retryNum,
-		retryDelay:    retryDelay,
-		callback:      callback,
+		cache:      cache,
+		key:        key,
+		value:      value,
+		signature:  signature,
+		expireSec:  expireSec,
+		interval:   interval,
+		retryNum:   retryNum,
+		retryDelay: retryDelay,
+		callback:   callback,
 	}
 }
 
@@ -98,14 +103,14 @@ type KeepaliveTask struct {
 	tPointer   atomic.Pointer[timewheel.Task]
 	retryCount int
 
-	key           string
-	value         string
-	signature     string
-	expireMillSec int64
-	interval      time.Duration
-	retryNum      int // 可重试次数
-	retryDelay    time.Duration
-	callback      KeepaliveCallback
+	key        string
+	value      string
+	signature  string
+	expireSec  int64
+	interval   time.Duration
+	retryNum   int // 可重试次数
+	retryDelay time.Duration
+	callback   KeepaliveCallback
 }
 
 func (task *KeepaliveTask) startTask() {
@@ -118,7 +123,7 @@ func (task *KeepaliveTask) addTask(delay time.Duration) {
 			// 已经取消
 			return
 		}
-		err := task.cache.insertOrUpdate(task.key, task.value, task.signature, task.expireMillSec)
+		err := task.cache.insertOrUpdate(task.key, task.value, task.signature, task.expireSec)
 		// 先执行回调
 		if sErr := coding.SafeRunSimple(func() {
 			task.callback(err, task.retryCount)
@@ -212,12 +217,11 @@ func (cache *Cache) AddOrUpdate(key, value string, signature [8]byte, expireSec 
 	}
 	signStr := buildSignature(signature)
 	value = signStr + value
-	expireMillSec := expireSec * 1000
-	if err := cache.insertOrUpdate(key, value, signStr, expireMillSec); err != nil {
+	if err := cache.insertOrUpdate(key, value, signStr, expireSec); err != nil {
 		return nil, err
 	}
 	if keepaliveSec > 0 {
-		kpTask := newKeepaliveTask(cache, key, value, signStr, expireMillSec, time.Duration(keepaliveSec)*time.Second,
+		kpTask := newKeepaliveTask(cache, key, value, signStr, expireSec, time.Duration(keepaliveSec)*time.Second,
 			keepaliveRetry, time.Duration(retryDelaySec)*time.Second, callback)
 		kpTask.startTask()
 		return kpTask, nil
@@ -225,17 +229,25 @@ func (cache *Cache) AddOrUpdate(key, value string, signature [8]byte, expireSec 
 	return nil, nil
 }
 
-func (cache *Cache) insertOrUpdate(key, value string, signature string, expireMillSec int64) error {
+func (cache *Cache) insertOrUpdate(key, value string, signature string, expireSec int64) error {
 	conn := cache.pool.Get()
 	if conn == nil {
 		return predis.ErrLessConn
 	}
 	defer cache.pool.Back(conn)
-	replyStr, err := redis.String(cache.anuScript.Do(conn, key, value, signature, len(signature), expireMillSec))
+	replyStr, err := redis.String(cache.anuScript.Do(conn, key, value, signature, len(signature), expireSec*1000))
 	if err != nil {
 		return err
 	}
-	if strings.Index(replyStr, replyErrorStart) == 0 {
+	//plog.Debug("insert/update distribution cache:",
+	//	pfield.String("key", key), pfield.String("value", value),
+	//	pfield.String("reply", replyStr),
+	//	pfield.String("signature", signature),
+	//)
+	if strings.HasPrefix(replyStr, replyErrorStart) {
+		if strings.HasPrefix(replyStr, replyErrorCacheExist) {
+			return ErrCacheExist
+		}
 		return errors.New("insert/update error:" + replyStr[replyErrorStartLen:])
 	}
 	return nil
@@ -250,11 +262,6 @@ func (cache *Cache) insertOrUpdate(key, value string, signature string, expireMi
 //	@return bool 缓存是否存在
 //	@return error 错误
 func (cache *Cache) Get(key string) (string, bool, error) {
-	conn := cache.pool.Get()
-	if conn == nil {
-		return "", false, predis.ErrLessConn
-	}
-	defer cache.pool.Back(conn)
 	replyStr, err := redis.String(cache.pool.Do("get", key))
 	if err != nil {
 		if errors.Is(err, redis.ErrNil) {

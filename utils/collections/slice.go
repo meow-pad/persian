@@ -11,7 +11,7 @@ func IsInSlice[T comparable](slice []T, value T) bool {
 	return false
 }
 
-func IsSameSlice[T comparable](slice1 []T, slice2 []T) bool {
+func HasSameElements[T comparable](slice1 []T, slice2 []T) bool {
 	if len(slice1) != len(slice2) {
 		return false
 	}
@@ -70,27 +70,77 @@ func SelectFromSlice[T any](slice []T, num int) []T {
 //	@Description: 查找在有序数组中的插入位置
 //	@param array
 //	@param value 插入值
-//	@param compare 比较函数，插入值与其他值的比较，大于为1，小于为-1，相等为0
+//	@param compare 比较函数，插入值与其他值的比较，大于为1（正数），小于为-1（负数），相等为0
 //	@return int 插入的位置
 func SortedSliceSearchInsert[T any](array []T, value T, compare func(v1, v2 T) int) int {
 	var mid int
-	low, height := 0, len(array)-1
-	if height < 0 {
+	low, high := 0, len(array)-1
+	if high < 0 {
 		return 0
 	}
-	if compare(value, array[height]) >= 0 {
-		return height + 1
+	if compare(value, array[high]) >= 0 {
+		return high + 1
 	}
-	for low <= height {
-		mid = (low + height) / 2
+	for low <= high {
+		mid = (low + high) / 2
 		i := compare(value, array[mid])
 		if i > 0 {
 			low = mid + 1
 		} else if i < 0 {
-			height = mid - 1
+			high = mid - 1
 		} else {
 			return mid
 		}
 	}
 	return low
+}
+
+// SortedSliceSearch
+//
+//	@Description: 二分查找元素在数组中的位置
+//	@param array
+//	@param value
+//	@param compare 比较函数，插入值与其他值的比较，大于为1（正数），小于为-1（负数），相等为0
+//	@param equal 判断是否相等的函数
+//	@return int 相等元素所在位置
+//	@return int 可插入位置
+func SortedSliceSearch[T any](array []T, value T, compare func(v1, v2 T) int, equal func(v1, v2 T) bool) (int, int) {
+	var mid int
+	low, high := 0, len(array)-1
+	if high < 0 {
+		return -1, 0
+	}
+	for low <= high {
+		mid = (low + high) / 2
+		i := compare(value, array[mid])
+		if i > 0 {
+			low = mid + 1
+		} else if i < 0 {
+			high = mid - 1
+		} else {
+			if equal(value, array[mid]) {
+				return mid, mid
+			}
+			// 前向查找是否有相等的值
+			for j := mid - 1; j >= 0; j-- {
+				if compare(value, array[j]) != 0 {
+					break
+				}
+				if equal(value, array[j]) {
+					return j, j
+				}
+			}
+			// 后向查找是否有相等的值
+			for j := mid + 1; j < len(array); j++ {
+				if compare(value, array[j]) != 0 {
+					break
+				}
+				if equal(value, array[j]) {
+					return j, j
+				}
+			}
+			return -1, mid
+		}
+	}
+	return -1, low
 }

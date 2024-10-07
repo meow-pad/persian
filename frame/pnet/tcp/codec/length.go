@@ -123,7 +123,17 @@ func (codec *lengthFieldCodec) Encode(msg any) (out []byte, err error) {
 		msgLen := bodyOffset + bodyLen
 		out = make([]byte, msgLen)
 		copy(out, codec.magicBytes)
-		codec.ByteOrder.PutUint32(out[codec.magicSize:bodyOffset], uint32(bodyLen))
+		switch codec.LengthSize {
+		case 1:
+			out[codec.magicSize] = byte(bodyLen)
+		case 2:
+			codec.ByteOrder.PutUint16(out[codec.magicSize:], uint16(bodyLen))
+		case 4:
+			codec.ByteOrder.PutUint32(out[codec.magicSize:], uint32(bodyLen))
+		default:
+			err = pnet.ErrInvalidLengthSize
+			return
+		}
 		copy(out[bodyOffset:msgLen], bodyBuf)
 		return
 	} else {
@@ -184,7 +194,18 @@ func (codec *lengthFieldCodec) decodeOne(reader gnet.Reader) (msg any, msgLen in
 		err = pnet.ErrInvalidMagic
 		return
 	}
-	bodyLen := int(codec.ByteOrder.Uint32(headerBuf[codec.magicSize:bodyOffset]))
+	var bodyLen int
+	switch codec.LengthSize {
+	case 1:
+		bodyLen = int(headerBuf[codec.magicSize])
+	case 2:
+		bodyLen = int(codec.ByteOrder.Uint16(headerBuf[codec.magicSize:bodyOffset]))
+	case 4:
+		bodyLen = int(codec.ByteOrder.Uint32(headerBuf[codec.magicSize:bodyOffset]))
+	default:
+		err = pnet.ErrInvalidLengthSize
+		return
+	}
 	if bodyLen > codec.maxDecodedLength {
 		err = pnet.ErrMessageTooLarge
 		return

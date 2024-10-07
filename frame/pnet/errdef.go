@@ -15,4 +15,5 @@ var (
 	ErrClosedClient      = errors.New("client is closed")
 	ErrWriteQueueFull    = errors.New("write queue is full")
 	ErrClientActiveClose = errors.New("client active close")
+	ErrInvalidLengthSize = errors.New("invalid length size")
 )

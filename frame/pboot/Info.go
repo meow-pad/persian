@@ -35,6 +35,18 @@ type AppInfo interface {
 	//	@return string
 	Cluster() string
 
+	// NamingGroup
+	//  @Description: 注册中心分组
+	//  @return string
+	//
+	NamingGroup() string
+
+	// ConfigGroup
+	//  @Description: 配置中心分组
+	//  @return string
+	//
+	ConfigCenterGroup() string
+
 	// TimeZone
 	//
 	//	@Description: 当前服务时区
