@@ -78,7 +78,7 @@ func (listener *cliListener) OnReceiveMulti(session session.Session, msgArr []an
 
 func TestTCP_Echo(t *testing.T) {
 	should := require.New(t)
-	addr := "127.0.0.1:9080"
+	addr := "127.0.0.1:12080"
 	echoSvr, err := newServer("tcp://"+addr, &svrListener{t: t})
 	should.Nil(err)
 	err = echoSvr.Start(context.Background())
