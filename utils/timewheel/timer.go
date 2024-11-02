@@ -3,6 +3,7 @@ package timewheel
 import (
 	"context"
 	"errors"
+	"github.com/meow-pad/persian/utils/coding"
 	"github.com/meow-pad/persian/utils/gopool"
 	"github.com/meow-pad/persian/utils/loggers"
 	"go.uber.org/atomic"
@@ -196,11 +197,23 @@ func (tw *TimeWheel) handleTick() {
 					loggers.Error("submit TimeWheel task error:", zap.Error(err))
 				}
 			} else {
-				go task.callback()
+				go func() {
+					coding.CatchPanicError("time wheel callback error", func() {
+					})
+					if task.callback != nil {
+						task.callback()
+					}
+				}()
 			}
 		} else {
 			// optimize gopool
-			task.callback()
+			func() {
+				coding.CatchPanicError("time wheel callback error", func() {
+				})
+				if task.callback != nil {
+					task.callback()
+				}
+			}()
 		}
 
 		// circle
@@ -329,6 +342,8 @@ func (tw *TimeWheel) AfterFunc(delay time.Duration, callback func()) *Timer {
 	queue := make(chan bool, 1)
 	task := tw.addAny(delay,
 		func() {
+			defer coding.CatchPanicError("time wheel callback error", func() {
+			})
 			callback()
 			notifyChannel(queue)
 		},

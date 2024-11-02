@@ -50,7 +50,7 @@ type fixedPoolWorker struct {
 //	@Description: 自修复的函数
 //	@receiver pool *fixedPoolWorker
 func (worker *fixedPoolWorker) run() {
-	defer coding.CachePanicError("fixedPoolWorker run task error:", func() {
+	defer coding.CatchPanicError("fixedPoolWorker run task error:", func() {
 		if worker.pool.closed.Load() {
 			worker.pool.waitGroup.Done()
 			return

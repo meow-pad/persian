@@ -101,7 +101,7 @@ func (pool *SimpleWorkerPool) Submit(category int, task func(*GoroutineLocal)) e
 	if pool.closed.Load() {
 		return ErrWorkerPoolClosed
 	}
-	defer coding.CachePanicError("SimpleWorkerPool run task error:", nil)
+	defer coding.CatchPanicError("SimpleWorkerPool run task error:", nil)
 	task(&pool.local)
 	return nil
 }

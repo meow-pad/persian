@@ -13,6 +13,9 @@ func Marshal(value any) ([]byte, error) {
 }
 
 func Unmarshal(data []byte, value any) error {
+	if len(data) <= 0 {
+		return nil
+	}
 	return json.Unmarshal(data, value)
 }
 

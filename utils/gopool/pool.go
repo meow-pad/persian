@@ -132,7 +132,7 @@ func (pool *GoroutinePool) Stop(ctx context.Context) error {
 //	@Description: 消耗任务队列
 //	@receiver pool *GoroutinePool
 func (pool *GoroutinePool) consumeQueue() {
-	defer coding.CachePanicError("consume GoroutinePool's queue error:", func() {
+	defer coding.CatchPanicError("consume GoroutinePool's queue error:", func() {
 		if pool.IsStopped() {
 			return
 		}

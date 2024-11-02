@@ -13,6 +13,9 @@ const (
 	DurationDay = 24 * time.Hour
 )
 
+// 带当前时区的零值时间
+var ZeroTime, _ = time.Parse("2006-01-02 15:04:05", "1970-01-01 00:00:00")
+
 var weekdays = []time.Weekday{
 	time.Sunday,
 	time.Monday,
@@ -75,7 +78,6 @@ func ToDayZeroTime(t time.Time) time.Time {
 }
 
 // ToDayZeroTimeWithBiasHour
-
 // @Description: 转换到零点且偏移指定小时
 // @param t
 // @param biasHour 必须在[0,24)小时之间
