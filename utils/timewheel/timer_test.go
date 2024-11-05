@@ -3,6 +3,7 @@ package timewheel
 import (
 	"github.com/stretchr/testify/require"
 	"sync"
+	"sync/atomic"
 	"testing"
 	"time"
 )
@@ -35,15 +36,15 @@ func TestTimer_TimeWheel_Add(t *testing.T) {
 	tw, err := NewTimeWheel(1*time.Second, 4)
 	should.Nil(err)
 	tw.Start()
-	count := 0
+	count := atomic.Uint32{}
 	wg := sync.WaitGroup{}
 	wg.Add(1)
 	startTime := time.Now()
 	var tFunc func()
 	tFunc = func() {
 		t.Logf("do func :time=%v\n", time.Now().Sub(startTime))
-		count++
-		if count >= 4 {
+		count.Add(1)
+		if count.Load() >= 4 {
 			wg.Done()
 		} else {
 			tw.Add(1*time.Second, tFunc)

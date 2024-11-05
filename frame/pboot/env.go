@@ -49,3 +49,18 @@ func ToEnv(envName string) (Env, error) {
 	}
 	return env, nil
 }
+
+func EnvName(env Env) (string, error) {
+	switch env {
+	case EnvLocal:
+		return envLocalName, nil
+	case EnvDevelopment:
+		return envDevelopmentName, nil
+	case EnvTest:
+		return envTestName, nil
+	case EnvProduct:
+		return envProductName, nil
+	default:
+		return "", fmt.Errorf("unknown environment:%d", env)
+	}
+}
