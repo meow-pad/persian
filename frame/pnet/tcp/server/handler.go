@@ -62,7 +62,7 @@ func (handler *eventHandler) OnClose(conn gnet.Conn, err error) (action gnet.Act
 	sess.conn.ToClosed(err)
 	// 移除会话
 	handler.server.RemoveSession(sess)
-	plog.Debug("close connecting:",
+	plog.Debug("close tcp-server connecting:",
 		pfield.String("server", handler.server.name),
 		pfield.Uint64("conn", sess.conn.Hash()))
 	// 触发关闭监听

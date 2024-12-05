@@ -30,7 +30,7 @@ func (handler *eventHandler) OnOpen(conn *Conn) (action action) {
 func (handler *eventHandler) OnClose(conn *Conn, err error) (action action) {
 	conn.ToClosed(err)
 	conn.client.listener.OnClosed(conn.client)
-	plog.Debug("close connecting:",
+	plog.Debug("close ws-client connecting:",
 		pfield.String("client", conn.client.Name),
 		pfield.Uint64("conn", conn.Hash()))
 	return

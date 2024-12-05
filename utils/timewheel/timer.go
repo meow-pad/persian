@@ -197,18 +197,18 @@ func (tw *TimeWheel) handleTick() {
 					loggers.Error("submit TimeWheel task error:", zap.Error(err))
 				}
 			} else {
-				go func() {
-					coding.CatchPanicError("time wheel callback error", func() {
-					})
-					if task.callback != nil {
-						task.callback()
-					}
-				}()
+				if task.callback != nil {
+					go func(tasId taskID, callback func()) {
+						defer coding.CatchPanicError("time wheel callback error", func() {
+						})
+						callback()
+					}(task.id, task.callback)
+				}
 			}
 		} else {
 			// optimize gopool
 			func() {
-				coding.CatchPanicError("time wheel callback error", func() {
+				defer coding.CatchPanicError("time wheel callback error", func() {
 				})
 				if task.callback != nil {
 					task.callback()

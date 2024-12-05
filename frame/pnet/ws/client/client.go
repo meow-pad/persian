@@ -73,7 +73,11 @@ func (client *Client) init(codec message.Codec, listener session.Listener, optio
 //	@param address 如：127.0.0.1:9999
 //	@return error
 func (client *Client) Dial(ctx context.Context, wsUrl *url.URL) error {
-	if !client.status.CompareAndSwap(StatusInitial, StatusConnecting) {
+	status := client.status.Load()
+	if status != StatusInitial && status != StatusClosed {
+		return ErrInvalidStatus
+	}
+	if !client.status.CompareAndSwap(status, StatusConnecting) {
 		return ErrInvalidStatus
 	}
 	client.status.Store(StatusConnecting)

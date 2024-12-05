@@ -7,29 +7,36 @@ import (
 	"net"
 )
 
-func GetLocalIP(ipStr string) (net.IP, error) {
+func GetLocalIP(ipStr string, subnet string) (net.IP, error) {
 	if ipStr == "" || ipStr == "0.0.0.0" {
-		return GetFirstActiveIP()
+		return GetFirstActiveIP(subnet)
 	}
-	addrs, err := net.InterfaceAddrs()
+	addresses, err := net.InterfaceAddrs()
 	if err != nil {
 		return nil, err
 	}
-	for _, address := range addrs {
+	for _, address := range addresses {
 		// 检查ip地址判断是否回环地址
-		if ipnet, ok := address.(*net.IPNet); ok && !ipnet.IP.IsLoopback() {
-			if ipnet.IP.String() == ipStr {
-				return ipnet.IP, nil
+		if ipNet, ok := address.(*net.IPNet); ok && !ipNet.IP.IsLoopback() {
+			if ipNet.IP.String() == ipStr {
+				return ipNet.IP, nil
 			}
 		}
 	}
 	return nil, fmt.Errorf("no local IP address found")
 }
 
-func GetFirstActiveIP() (net.IP, error) {
+func GetFirstActiveIP(subnet string) (net.IP, error) {
 	interfaces, err := net.Interfaces()
 	if err != nil {
 		return nil, err
+	}
+	var network *net.IPNet
+	if len(subnet) > 0 {
+		_, network, err = net.ParseCIDR(subnet)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	for _, iFace := range interfaces {
@@ -48,7 +55,13 @@ func GetFirstActiveIP() (net.IP, error) {
 				//if ipNet.IP.To4() != nil {
 				//	return ipNet.IP, nil
 				//}
-				return ipNet.IP, nil
+				if network != nil {
+					if network.Contains(ipNet.IP) {
+						return ipNet.IP, nil
+					}
+				} else {
+					return ipNet.IP, nil
+				}
 			}
 		} // end of for
 	} // end of for

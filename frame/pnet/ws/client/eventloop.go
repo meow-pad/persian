@@ -48,7 +48,7 @@ type eventLoop struct {
 //	@Description:
 //	@receiver loop
 func (loop *eventLoop) run(first bool) {
-	defer coding.CachePanicError("run error:", func() {
+	defer coding.CatchPanicError("run error:", func() {
 		if loop.client.IsClosed() {
 			return
 		}
@@ -116,7 +116,7 @@ func (loop *eventLoop) run(first bool) {
 //	@Description: 持续读网络数据
 //	@receiver loop
 func (loop *eventLoop) readConn() {
-	defer coding.CachePanicError("read conn error:", func() {
+	defer coding.CatchPanicError("read conn error:", func() {
 		if loop.client.IsClosed() {
 			return
 		}
