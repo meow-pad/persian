@@ -31,15 +31,15 @@ func getOrder(baseOrder float32, value float32) (float32, error) {
 	if boIndex < 0 {
 		return 0, fmt.Errorf("invalid base order:%f", baseOrder)
 	}
-	max := float32(0)
+	maxValue := float32(0)
 	if boIndex >= len(baseOrders)-1 {
-		max = OrderMax
+		maxValue = OrderMax
 	} else {
-		max = baseOrders[boIndex+1] - 1
+		maxValue = baseOrders[boIndex+1] - 1
 	}
 	order := baseOrder + value
-	if order > max {
-		return max, nil
+	if order > maxValue {
+		return maxValue, nil
 	}
 	return order, nil
 }

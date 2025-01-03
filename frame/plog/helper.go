@@ -107,6 +107,7 @@ func Error(msg string, fields ...zap.Field) {
 //	@param fields ...zap.Field
 func DPanic(msg string, fields ...zap.Field) {
 	if defaultLogger.inner != nil {
+		fields = append(fields, zap.Stack("stacktrace")) // 添加堆栈信息
 		if defaultLogger.logCfg.Development {
 			if defaultLogger.inner.Core().Enabled(zap.DPanicLevel) {
 				msg, fields = encodeErrorFieldLayout(msg, fields...)
@@ -125,6 +126,7 @@ func DPanic(msg string, fields ...zap.Field) {
 //	@param fields ...zap.Field
 func Panic(msg string, fields ...zap.Field) {
 	if defaultLogger.inner != nil {
+		fields = append(fields, zap.Stack("stacktrace")) // 添加堆栈信息
 		if defaultLogger.logCfg.Development {
 			if defaultLogger.inner.Core().Enabled(zap.PanicLevel) {
 				msg, fields = encodeErrorFieldLayout(msg, fields...)

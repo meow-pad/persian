@@ -162,11 +162,36 @@ func ToWeekZeroTimeWithBiasHour(t time.Time, firstWeekday time.Weekday, biasHour
 //	@return time.Time
 //	@return error
 func ToNextWeekZeroTimeWithBiasHour(t time.Time, firstWeekday time.Weekday, biasHour int) (time.Time, error) {
+	zeroTime, err := ToWeekZeroTimeWithBiasHour(t, firstWeekday, biasHour)
+	if err != nil {
+		return zeroTime, err
+	}
+
+	return zeroTime, nil
+}
+
+// ToNextMonthZeroTimeWithBiasHour
+//
+//	@Description: 获取下个月1号的带偏移零点
+//	@param t
+//	@param biasHour
+//	@return time.Time
+//	@return error
+func ToNextMonthZeroTimeWithBiasHour(t time.Time, biasHour int) (time.Time, error) {
 	if biasHour < 0 || biasHour >= 24 {
 		return t, fmt.Errorf("invalid bias hour:%d", biasHour)
 	}
-	// 计算一周的第一天
-	zeroTime := time.Date(t.Year(), t.Month(), getFirstWeekDay(&t, firstWeekday)+7, biasHour, 0, 0, 0, time.Local)
+	// 获取当前年份和月份
+	year, month, _ := t.Date()
+
+	// 计算下一个月份
+	nextMonth := month + 1
+	if nextMonth > 12 {
+		nextMonth = 1
+		year += 1
+	}
+	// 返回下个月的第一天
+	zeroTime := time.Date(year, time.Month(nextMonth), 1, biasHour, 0, 0, 0, time.Local)
 	return zeroTime, nil
 }
 

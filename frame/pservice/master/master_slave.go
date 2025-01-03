@@ -14,8 +14,10 @@ import (
 
 type MSHandler interface {
 	OnBeMainService() error
+	OnBeMainServiceFailed()
 	OnLeaveMainService()
 	OnTaskData(dataType int32, data any)
+	OnKeepTick()
 }
 
 const (
@@ -43,22 +45,23 @@ func NewMSService(opts ...Option) (*MSService, error) {
 type MSService struct {
 	*Options
 
-	checkTask *timewheel.Task
-	mainSrv   atomic.Bool // 是否是维护数据的主服务
-	taskChan  chan *MSTask
-	closed    atomic.Bool
+	checkTask     *timewheel.Task
+	mainSrv       atomic.Bool // 是否是维护数据的主服务
+	mainSrvInstId atomic.Pointer[string]
+	taskChan      chan *MSTask
+	closed        atomic.Bool
 }
 
 func (srv *MSService) Start(ctx context.Context) error {
+	srv.taskChan = make(chan *MSTask, 1)
+	go srv.running()
+	srv.checkTask = srv.TWTimer.AddCron(time.Duration(srv.TickIntervalSec)*time.Second, srv.timeTick)
 	// 尝试成为主服务
 	if err := srv.tryToBeMainService(true); err != nil {
 		plog.Info("try to be main service failed",
 			pfield.String("SrvName", srv.SrvName),
 			pfield.Error(err))
 	}
-	srv.taskChan = make(chan *MSTask, 1)
-	go srv.running()
-	srv.checkTask = srv.TWTimer.AddCron(time.Duration(srv.TickIntervalSec)*time.Second, srv.timeTick)
 	return nil
 }
 
@@ -77,10 +80,6 @@ func (srv *MSService) Stop(ctx context.Context) error {
 	return nil
 }
 
-func (srv *MSService) CName() string {
-	return srv.SrvName
-}
-
 // tryToBeMainService
 //
 //	@Description: io阻塞执行成为主服务
@@ -94,6 +93,7 @@ func (srv *MSService) tryToBeMainService(deleteCacheOnErr bool) error {
 	}
 	// 执行成为主服务的准备操作
 	if err = srv.Handler.OnBeMainService(); err != nil {
+		srv.Handler.OnBeMainServiceFailed()
 		if deleteCacheOnErr {
 			// 失败了则删除缓存返回
 			srv.deleteDCache()
@@ -124,7 +124,9 @@ func (srv *MSService) leaveMainService(deleteDCache bool) {
 //	@receiver srv
 //	@return error
 func (srv *MSService) keepMainService() error {
+	defer srv.Handler.OnKeepTick()
 	if srv.mainSrv.Load() {
+		srv.mainSrvInstId.Store(nil)
 		// 如果是主服务则续写缓存
 		_, err := srv.Cache.AddOrUpdate(srv.DistributionCacheKey, srv.ServiceId, srv.DistributionCacheSignature,
 			srv.DistributionCacheExpireSec, 0, 0, 0, nil)
@@ -146,6 +148,7 @@ func (srv *MSService) keepMainService() error {
 			return err
 		}
 		if exist {
+			srv.mainSrvInstId.Store(&cServiceId)
 			if cServiceId == srv.ServiceId {
 				// 缓存中存在当前服务，却不是主服务，可能是重启了或者上次续约失败了，尝试成为主服务
 				if err = srv.tryToBeMainService(false); err != nil {
@@ -158,6 +161,7 @@ func (srv *MSService) keepMainService() error {
 			}
 			return nil
 		} else {
+			srv.mainSrvInstId.Store(nil)
 			// 缓存中不存在主服务，尝试成为主服务
 			if err = srv.tryToBeMainService(true); err != nil {
 				return err
@@ -251,4 +255,41 @@ func (srv *MSService) running() {
 			}
 		}
 	} // end of for
+}
+
+func (srv *MSService) IsMainService() bool {
+	return srv.mainSrv.Load()
+}
+
+func (srv *MSService) GetMainServiceId() string {
+	if srv.IsMainService() {
+		return srv.ServiceId
+	} else {
+		mainSrvId := srv.mainSrvInstId.Load()
+		if mainSrvId != nil {
+			return *mainSrvId
+		} else {
+			return srv.GetLatestMainServiceId()
+		}
+	}
+}
+
+func (srv *MSService) GetLatestMainServiceId() string {
+	if srv.IsMainService() {
+		srv.mainSrvInstId.Store(nil)
+		return srv.ServiceId
+	} else {
+		cServiceId, exist, err := srv.Cache.Get(srv.DistributionCacheKey)
+		if err != nil {
+			plog.Error("get first island_rank Cache failed", pfield.Error(err))
+			return ""
+		}
+		if exist {
+			srv.mainSrvInstId.Store(&cServiceId)
+			return cServiceId
+		} else {
+			srv.mainSrvInstId.Store(nil)
+			return ""
+		}
+	}
 }

@@ -91,6 +91,10 @@ func Object(i any) *Bean {
 	return setupLifeCycleModule(app.Object(i), OrderCustom)
 }
 
+func LastObject(i any) *Bean {
+	return setupLifeCycleModule(app.Object(i), OrderCustom).Order(OrderMax)
+}
+
 // Provide 参考 Container.Provide 的解释。
 func Provide(ctor any, args ...arg.Arg) *Bean {
 	return setupLifeCycleModule(app.Provide(ctor, args...), OrderCustom)
@@ -101,6 +105,10 @@ func setupLifeCycleModule(beanDef *gs.BeanDefinition, baseOrder float32) *Bean {
 	lifeCycle, _ := beanDef.Interface().(LifeCycle)
 	if lifeCycle != nil {
 		addLifeCycle(lifeCycle, bean)
+	}
+	startListener, _ := beanDef.Interface().(StartListener)
+	if startListener != nil {
+		addStartListener(startListener, bean)
 	}
 	return bean
 }
