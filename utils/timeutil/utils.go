@@ -115,6 +115,7 @@ func ToNextDayZeroTimeWithBiasHour(t time.Time, biasHour int) (time.Time, error)
 func getFirstWeekDay(t *time.Time, firstWeekday time.Weekday) int {
 	// 获取当前星期几
 	weekday := t.Weekday()
+	//return t.Day() - (int(t.Weekday())-int(firstWeekday)+7)%7
 	if weekday < firstWeekday {
 		return t.Day() - int(weekday) + int(firstWeekday) - 7
 	} else {
@@ -128,9 +129,9 @@ func getFirstWeekDay(t *time.Time, firstWeekday time.Weekday) int {
 //	@param t
 //	@param firstWeekday
 //	@return time.Time
-func ToWeekZeroTime(t time.Time, firstWeekday time.Weekday) time.Time {
+func ToWeekZeroTime(t time.Time, firstDayOfWeek time.Weekday) time.Time {
 	// 计算一周的第一天
-	zeroTime := time.Date(t.Year(), t.Month(), getFirstWeekDay(&t, firstWeekday),
+	zeroTime := time.Date(t.Year(), t.Month(), getFirstWeekDay(&t, firstDayOfWeek),
 		0, 0, 0, 0, time.Local)
 	return zeroTime
 }
@@ -202,5 +203,22 @@ func ToNextMonthZeroTimeWithBiasHour(t time.Time, biasHour int) (time.Time, erro
 //	@param t2
 //	@return bool
 func IsSameDay(t1 time.Time, t2 time.Time) bool {
-	return t1.Year() == t2.Year() && t1.Month() == t2.Month() && t1.Day() == t2.Day()
+	return t1.Year() == t2.Year() && t1.YearDay() == t2.YearDay()
+}
+
+// IsSameWeek
+//
+//	@Description: 判断两个时间是否在同一周内
+//	@param t1 需要比较的两个时间
+//	@param t2 需要比较的两个时间
+//	@param firstDayOfWeek 用户指定的一周的第一天（如 time.Monday）
+//	@return bool 如果两个时间在同一周内，返回 true，否则返回 false
+func IsSameWeek(t1, t2 time.Time, firstDayOfWeek time.Weekday) bool {
+	// 计算 t1 所在周的起始时间
+	startOfWeekT1 := ToWeekZeroTime(t1, firstDayOfWeek)
+	// 计算 t2 所在周的起始时间
+	startOfWeekT2 := ToWeekZeroTime(t2, firstDayOfWeek)
+
+	// 比较两个周的起始时间
+	return startOfWeekT1.Equal(startOfWeekT2)
 }

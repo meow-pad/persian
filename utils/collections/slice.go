@@ -11,6 +11,24 @@ func IsInSlice[T comparable](slice []T, value T) bool {
 	return false
 }
 
+func AppendIfNotInSlice[T comparable](slice []T, value T) []T {
+	for _, sv := range slice {
+		if sv == value {
+			return slice
+		}
+	}
+	return append(slice, value)
+}
+
+func RemoveFromSlice[T comparable](slice []T, value T) []T {
+	for i, sv := range slice {
+		if sv == value {
+			return append(slice[0:i], slice[i+1:]...)
+		}
+	}
+	return slice
+}
+
 func HasSameElements[T comparable](slice1 []T, slice2 []T) bool {
 	if len(slice1) != len(slice2) {
 		return false

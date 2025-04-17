@@ -16,6 +16,7 @@ func Max[T constraints.Comparable](value1, value2 T) T {
 	} else {
 		return value2
 	}
+
 }
 
 func Clamp[T constraints.Comparable](value, min, max T) T {
